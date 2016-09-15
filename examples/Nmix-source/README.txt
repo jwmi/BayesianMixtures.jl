@@ -1,4 +1,4 @@
-This folder contains the files for Peter Green's Nmix program for Bayesian analysis of univariate normal mixtures, implementing the approach of Richardson and Green, Journal of the Royal Statistical Society, B, 59, 731-792 (1997).
+This folder contains the files for Peter Green's Nmix program for univariate normal mixtures with a prior on the number of components. This implements the reversible jump MCMC (RJMCMC) approach of Richardson and Green (1997), Journal of the Royal Statistical Society: Series B, 59(4), 731-792.
 https://people.maths.bris.ac.uk/~mapjg/Nmix/
 
 ----------------------------------------------------------------------
@@ -9,7 +9,7 @@ CONTENTS
 ----------------------------------------------------------------------
 For Peter Green's instructions, see the readme.txt file in Nmix.zip or Nmix.tar.gz. 
 
-If it helps, here is the process I used to compile Nmix on Mac and Windows.
+Below is the process I used to compile Nmix on Mac and Windows.
 
 MAC OSX
 
@@ -17,7 +17,7 @@ MAC OSX
 - Unpack Nmix.tar.gz and run the following commands in the resulting folder:
     gcc -c -o sd.o -DRETS -DSUNF sd.c
     gfortran -O2 -o Nmix Nmix.f pnorm.f algama.f rgamma.f gauss4.f sd.o
-- Move the resulting binary ("Nmix") to the examples folder. 
+- Move the resulting binary ("Nmix") to the examples folder. Make sure Nmix is executable: chmod +x Nmix.
 
 WINDOWS
 
