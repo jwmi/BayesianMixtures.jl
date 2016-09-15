@@ -8,7 +8,7 @@ include("MVN.jl")
 include("MVNaaC.jl")
 include("MVNaaN.jl")
 include("MVNaaRJ.jl")
-include("NormalGeneral.jl")
+include("NormalNonoptimized.jl")
 
 # ===================================================================
 # ===================================================================

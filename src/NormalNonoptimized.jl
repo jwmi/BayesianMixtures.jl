@@ -1,6 +1,6 @@
 # Univariate Normal setup, following Richardson & Green (1997).
 # This version uses the general version of the sampler.
-module NormalGeneral
+module NormalNonoptimized
 
 module NormalModel
 export Theta, Data, log_likelihood, log_prior, prior_sample!, new_theta, Theta_clear!, Theta_adjoin!, Theta_remove!,
@@ -96,7 +96,7 @@ include("generic.jl")
 # Include core sampler code
 include("coreNonconjugate.jl")
 
-end # module NormalGeneral
+end # module NormalNonoptimized
 
 
 
