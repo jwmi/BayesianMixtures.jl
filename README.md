@@ -7,15 +7,15 @@
 ## About
 
 BayesianMixtures is a Julia package for nonparametric Bayesian mixture models and Bayesian clustering. The following model types are currently implemented:
-- mixtures with a prior on the number of components, a.k.a., mixture of finite mixtures (MFM), and
-- Dirichlet process mixtures.
+- mixture with a prior on the number of components, a.k.a., mixture of finite mixtures (MFM), and
+- Dirichlet process mixture.
 
 The following component distributions are currently implemented:
 - univariate normal,
 - multivariate normal with diagonal covariance matrix, and
 - multivariate normal (with unconstrained covariance matrix).
 
-For all models, inference is performed using the Jain-Neal split-merge sampler, including both conjugate and non-conjugate cases (Jain and Neal, 2004, 2007).  For mixtures with a prior on the number of components, this is done using the results of Miller and Harrison (2015).
+For all models, inference is performed using the Jain-Neal split-merge samplers, including both conjugate and non-conjugate cases (Jain and Neal, 2004, 2007).  For MFMs, this is done using the results of Miller and Harrison (2015).
 
 Please cite the following publication if you use this package in your research:
 > J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *arXiv preprint*, http://arxiv.org/abs/1502.06241, 2015.
@@ -77,7 +77,7 @@ Pkg.clone("https://github.com/jwmi/BayesianMixtures.jl.git")
 ```
 
 
-## Contact / bug fixes
+## Questions or bugs
 
 If you have a question or find a bug, feel free to contact me ([Jeff Miller](http://jwmi.github.io/)). Also feel free to submit a pull request if you find and fix a bug.
 
