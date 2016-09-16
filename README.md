@@ -49,6 +49,8 @@ result = BayesianMixtures.run_sampler(options)
 k_posterior = BayesianMixtures.k_posterior(result)
 ```
 
+For more in-depth examples, see the `examples` folder.
+
 
 ## Additional features
 
