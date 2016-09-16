@@ -82,9 +82,9 @@ Pkg.clone("https://github.com/jwmi/BayesianMixtures.jl.git")
 If you have a question or find a bug, feel free to contact me ([Jeff Miller](http://jwmi.github.io/)). Also feel free to submit a pull request if you find and fix a bug.
 
 
-## License / Citation
+## Licensing / Citation
 
-This entire package is released under an MIT license. See [LICENSE.md](LICENSE.md). 
+This package is released under an MIT license (with the exception of Peter Green's Nmix code). See [LICENSE.md](LICENSE.md). 
 
 Please cite the following publication if you use this package in your research:
 > J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *arXiv preprint*, http://arxiv.org/abs/1502.06241, 2015.
