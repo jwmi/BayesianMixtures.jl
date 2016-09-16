@@ -39,7 +39,7 @@ Installing PyPlot can be complicated, but hopefully the following commands will 
 ENV["PYTHON"]=""
 Pkg.add("PyPlot")
 ```
-If not, please see the [PyPlot installation instructions](https://github.com/JuliaPy/PyPlot.jl).
+If not, you can either (a) not use the plotting functions in BayesianMixtures (recommended for now), or (b) try your luck with the [PyPlot installation instructions](https://github.com/JuliaPy/PyPlot.jl).
 
 
 ## Basic usage example
