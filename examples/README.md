@@ -1,7 +1,5 @@
 This folder contains examples using the BayesianMixtures package.
-
 In particular, code is provided for the results in Miller and Harrison (2015).
-
 Peter Green's Nmix program is also included.
 
 ----------------------------------------------------------------------
