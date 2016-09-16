@@ -24,7 +24,7 @@ This folder contains the source code for the BayesianMixtures package.
 
 #### Helper functions
 - Gamma.jl - sampling gamma random variables (faster than calling Distributions.jl).
-- Lower.jl - matrix operations using lower-triangular matrices (faster than Julia matrix operations).
+- Lower.jl - matrix operations using lower-triangular matrices (faster than built-in Julia matrix operations).
 
 
 
