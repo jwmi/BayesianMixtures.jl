@@ -17,7 +17,7 @@ The following component distributions are currently implemented:
 
 For all models, inference is performed using the Jain-Neal split-merge sampler, including both conjugate and non-conjugate cases (Jain and Neal, 2004, 2007).  For mixtures with a prior on the number of components, this is done using the results of Miller and Harrison (2015).
 
-Please cite the following publication if you use this package for your research:
+Please cite the following publication if you use this package in your research:
 > J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *arXiv preprint*, http://arxiv.org/abs/1502.06241, 2015.
 
 
@@ -82,6 +82,14 @@ Pkg.clone("https://github.com/jwmi/BayesianMixtures.jl.git")
 If you have a question or find a bug, feel free to contact me ([Jeff Miller](http://jwmi.github.io/)). Also feel free to submit a pull request if you find and fix a bug.
 
 
+## License / Citation
+
+This entire package is released under an MIT license. See [LICENSE.md](LICENSE.md). 
+
+Please cite the following publication if you use this package in your research:
+> J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *arXiv preprint*, http://arxiv.org/abs/1502.06241, 2015.
+
+
 ## References
 
 S. Jain and R. M. Neal. A split-merge Markov chain Monte Carlo procedure for the Dirichlet process mixture model. *Journal of Computational and Graphical Statistics*, 13(1), 2004.
@@ -91,6 +99,4 @@ S. Jain and R. M. Neal. Splitting and merging components of a nonconjugate Diric
 J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *arXiv preprint*, http://arxiv.org/abs/1502.06241, 2015.
 
 S. Richardson and P. J. Green. On Bayesian analysis of mixtures with an unknown number of components. *Journal of the Royal Statistical Society: Series B (Statistical Methodology)*, 59(4):731-792, 1997.
-
-
 
