@@ -1,11 +1,11 @@
 This folder contains examples using the BayesianMixtures package.
 
-In particular, code is provided for the results in Miller and Harrison, "Mixture models with a prior on the number of components", 2016.
+In particular, code is provided for the results in Miller and Harrison (2015).
 
 Peter Green's Nmix program is also included.
 
 ----------------------------------------------------------------------
-CONTENTS
+## Contents
 
 - basicExample.jl - A basic example of using the BayesianMixtures package.
 
