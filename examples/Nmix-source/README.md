@@ -16,24 +16,23 @@ Below is the process I used to compile Nmix on Mac and Windows.
 - Install gfortran by following the instructions here: https://gcc.gnu.org/wiki/GFortranBinariesMacOS.
 - At this point, the pre-compiled binary `examples/Nmix` might work for you. If not, read on.
 - Unpack Nmix.tar.gz and run the following commands in the resulting folder:
-    ```
-    gcc -c -o sd.o -DRETS -DSUNF sd.c
-    gfortran -O2 -o Nmix Nmix.f pnorm.f algama.f rgamma.f gauss4.f sd.o
-    ```
-- Move the resulting binary ("Nmix") to the examples folder. Make sure Nmix is executable: chmod +x Nmix.
+```
+gcc -c -o sd.o -DRETS -DSUNF sd.c
+gfortran -O2 -o Nmix Nmix.f pnorm.f algama.f rgamma.f gauss4.f sd.o
+```
+- Move the resulting binary (`Nmix`) to the examples folder. Make sure Nmix is executable: `chmod +x Nmix`.
 
 ### Nmix on Windows
 
-- If the provided Nmix.exe executable works for you (`examples/Nmix.exe`), then you're good to go.  Otherwise, read on.
-- Install gfortran by following the detailed instructions here: http://www.mingw.org/wiki/Getting_Started
-    Choose to install mingw32-base, mingw32-gcc-fortran, and msys-base.
-- Unzip Nmix.zip and copy the contents to your MSYS home directory, e.g., `C:\MinGW\msys\1.0\home\jeff\`.
+- If the pre-compiled executable works for you (`examples/Nmix.exe`), then you're good to go.  Otherwise, read on.
+- Install gfortran by following the detailed instructions here: http://www.mingw.org/wiki/Getting_Started. Choose to install mingw32-base, mingw32-gcc-fortran, and msys-base.
+- Unzip Nmix.zip and copy the contents to your MSYS home directory, e.g., mine is `C:\MinGW\msys\1.0\home\jeff\`.
 - Start MSYS and run the following commands in the folder containing the Nmix source files:
-    ```
-    gcc -c -o sd.o -DRETS -DSUNF sd.c
-    gfortran -O2 -static -o Nmix Nmix.f pnorm.f algama.f rgamma.f gauss4.f sd.o
-    ```
-- Move the resulting executable ("Nmix.exe") to the examples folder. 
+```
+gcc -c -o sd.o -DRETS -DSUNF sd.c
+gfortran -O2 -static -o Nmix Nmix.f pnorm.f algama.f rgamma.f gauss4.f sd.o
+```
+- Move the resulting executable (`Nmix.exe`) to the examples folder. 
 
 
 
