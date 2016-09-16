@@ -11,7 +11,7 @@ This folder contains the source code for the BayesianMixtures package.
 - coreNonconjugate.jl - (uncollapsed) Jain-Neal sampler for non-conjugate priors.
 - coreNormal.jl - (uncollapsed) Jain-Neal sampler optimized for univariate normal model.
 
-#### Component distribution models
+#### Component distributions
 - Normal.jl - univariate normal with parameter settings from Richardson and Green (1997), using coreNormal.jl sampler.
 - MVN.jl - multivariate normal (with unconstrained covariance matrices), using coreNonconjugate.jl.
 - MVNaaC.jl - multivariate normal with diagonal covariance matrices, using coreConjugate.jl.
@@ -19,12 +19,12 @@ This folder contains the source code for the BayesianMixtures package.
 - MVNaaRJ.jl - multivariate normal with diagonal covariance matrices, using reversible jump sampler.
 - NormalNonoptimized.jl - univariate normal with parameter settings from Richardson and Green (1997), using generic coreNonconjugate.jl.
 
-#### Partition distribution models
+#### Partition distributions
 - MFM.jl - mixture of finite mixtures (MFM) model.
 
 #### Helper functions
 - Gamma.jl - sampling gamma random variables (faster than calling Distributions.jl).
-- Lower.jl - matrix operations using lower-triangular matrices (faster than native Julia operations).
+- Lower.jl - matrix operations using lower-triangular matrices (faster than native Julia operations, at time of writing).
 
 
 
