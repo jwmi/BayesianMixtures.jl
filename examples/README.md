@@ -17,7 +17,6 @@ Peter Green's Nmix program is also included.
 
 #### Green's Nmix program for reversible jump
 - Nmix-source/ - Source code of Peter Green's Nmix program for RJMCMC.
-- Nmix - Pre-compiled binary for Mac OS X. (NOTE: You will still need the gfortran libraries. See Nmix-source/README.md.)
 - Nmix.exe - Pre-compiled executable for Windows. If you're lucky, this will work out-of-the-box.
 - galx.dat - Galaxy data set in Nmix input format.
 - galx/ - Folder to contain results from running Nmix on galx.dat.

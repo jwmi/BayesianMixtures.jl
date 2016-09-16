@@ -14,7 +14,6 @@ Below is the process I used to compile Nmix on Mac and Windows.
 ### Nmix on Mac OS X
 
 - Install gfortran by following the instructions here: https://gcc.gnu.org/wiki/GFortranBinariesMacOS.
-- At this point, the pre-compiled binary `examples/Nmix` might work for you. If not, read on.
 - Unpack Nmix.tar.gz and run the following commands in the resulting folder:
 ```
 gcc -c -o sd.o -DRETS -DSUNF sd.c
