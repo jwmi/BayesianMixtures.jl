@@ -85,7 +85,8 @@ function update_hyperparameters!(H,theta,ca,t)
     lambda = 1.0./(theta[2,ca[1:t]].^2)
     alpha = H.g + H.a*t
     beta = H.h + sum(lambda)
-    H.b = rand(Gamma(alpha, 1/beta))
+    #H.b = rand(Gamma(alpha, 1/beta))
+    H.b = Random.gamma(alpha, beta)
 end
 
 end # module NormalModel
