@@ -4,6 +4,8 @@
 
 module Random
 
+inverse_gamma(shape, rate) = 1/gamma(shape, rate)
+
 function gamma(shape, rate)
     # Return a random sample from a gamma distribution
     # with pdf \propto x^{shape-1}exp(-rate*x)
@@ -49,6 +51,22 @@ end
 function chi_square(dof)
     return gamma(0.5*dof, 0.5)
     # This was corrected from gamma(0.5, 2.0*dof) in the original code
+end
+
+## return a random sample from a beta distribution
+function beta(a, b)
+    if (a <= 0) || (b <= 0)
+        error("Beta parameters must be positive")
+    end
+    
+    ## There are more efficient methods for generating beta samples.
+    ## However such methods are a little more efficient and much more complicated.
+    ## For an explanation of why the following method works, see
+    ## http://www.johndcook.com/distribution_chart.html#gamma_beta
+
+    u = gamma(a, 1.0)
+    v = gamma(b, 1.0)
+    return u / (u + v)
 end
 
 end

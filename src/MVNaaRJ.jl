@@ -1,7 +1,8 @@
 # Reversible jump MCMC for axis-aligned multivariate normal mixtures, using a conjugate prior.
 module MVNaaRJ
 
-using Distributions
+include("Random.jl")
+using .Random
 
 typealias Data Array{Float64,1}
 type Theta
@@ -147,7 +148,7 @@ function update_parameters!(w,m,v,s,sx,ssx,clist,H)
     c = clist.first
     w_sum = 0.0
     while c != 0
-        w[c] = rand(Gamma(H.gamma+s[c],1))
+        w[c] = Random.gamma(H.gamma+s[c],1)
         w_sum += w[c]
         c = clist.next[c]
     end
@@ -168,7 +169,7 @@ function update_parameters!(w,m,v,s,sx,ssx,clist,H)
                 # println(0.5*(ssx[c,j] - 2*m[c,j]*sx[c,j] + s[c]*m[c,j]*m[c,j]))
                 # println(0.5*H.r*(m[c,j]-H.m)*(m[c,j]-H.m))
             # end
-            v[c,j] = rand(InverseGamma(A,B))
+            v[c,j] = Random.inverse_gamma(A,B)
         end
         
         # normalize weights
@@ -199,7 +200,7 @@ function log_Jacobian(w,v,u1,u2,cm,H)
 end
 
 # propose split-merge move
-function split_merge!(k,t,x,z,w,m,v,s,sx,ssx,clist,cfree,ilist, zs,u2,u3,du1,du2,du3,H)
+function split_merge!(k,t,x,z,w,m,v,s,sx,ssx,clist,cfree,ilist, zs,u2,u3,H)
     if ((k==1) || (rand()<0.5)) # propose split
         # choose component indices
         cm = randunif(k,clist)
@@ -207,10 +208,10 @@ function split_merge!(k,t,x,z,w,m,v,s,sx,ssx,clist,cfree,ilist, zs,u2,u3,du1,du2
         c2 = pop!(cfree)
         # sample u's
         log_pu = 0.0
-        u1 = rand(du1); log_pu += logpdf(du1,u1)
+        u1 = Random.beta(2,2); log_pu += log(6*u1*(1-u1))
         for j = 1:H.d
-            u2[j] = rand(du2); log_pu += logpdf(du2,u2[j])
-            u3[j] = rand(du3); log_pu += logpdf(du3,u3[j])
+            u2[j] = Random.beta(2,2); log_pu += log(6*u2[j]*(1-u2[j]))
+            u3[j] = rand(); # log_pu += 0.0
         end
         # split w, m, and v
         w[c1],w[c2] = w[cm]*u1, w[cm]*(1-u1)
@@ -291,10 +292,10 @@ function split_merge!(k,t,x,z,w,m,v,s,sx,ssx,clist,cfree,ilist, zs,u2,u3,du1,du2
         end
         # compute u's
         log_pu = 0.0
-        u1 = w[c1]/w[cm]; log_pu += logpdf(du1,u1)
+        u1 = w[c1]/w[cm]; log_pu += log(6*u1*(1-u1))
         for j = 1:H.d
-            u2[j] = (m[cm,j] - m[c1,j])/sqrt(v[cm,j]*w[c2]/w[c1]); log_pu += logpdf(du2,u2[j])
-            u3[j] = (v[c1,j]*w[c1])/(v[cm,j]*w[cm]*(1-u2[j]*u2[j])); log_pu += logpdf(du3,u3[j])
+            u2[j] = (m[cm,j] - m[c1,j])/sqrt(v[cm,j]*w[c2]/w[c1]); log_pu += log(6*u2[j]*(1-u2[j])*(0<=u2[j]<=1))
+            u3[j] = (v[c1,j]*w[c1])/(v[cm,j]*w[cm]*(1-u2[j]*u2[j])); log_pu += (0<=u3[j]<=1 ? 0.0 : -Inf)
         end
         # merge z and compute the log likelihood ratio
         log_pzs = 0.0
@@ -358,12 +359,11 @@ end
 
 function birth_death!(k,t,n,w,m,v,s,sx,ssx,clist,cfree,ilist,H)
     k0 = k-t # number of empty components
-    dv = InverseGamma(H.a,H.b)
     if rand() < 0.5 # propose birth of an empty component
         c = pop!(cfree)
-        w[c] = rand(Beta(1,k))
+        w[c] = Random.beta(1,k)
         for j = 1:H.d
-            v[c,j] = rand(dv)
+            v[c,j] = Random.inverse_gamma(H.a,H.b)
             m[c,j] = randn()*sqrt(v[c,j]/H.r) + H.m
         end
         log_A = (H.log_pk_vec[k+1] - H.log_pk_vec[k]
@@ -415,7 +415,6 @@ function sampler(options,n_total,n_keep)
     kmax = min(n,options.k_max)
     @assert(n==length(x))
     d = H.d # dimension
-    du1,du2,du3 = Beta(2,2),Beta(2,2),Beta(1,1) # distns of aux vars u1,u2,u3
     
     # State
     # k,t,z,s,w,m,v,sx,ssx,cfirst,cnext,cfree,ilist
@@ -470,7 +469,7 @@ function sampler(options,n_total,n_keep)
         t = recompute_statistics!(x,z,s,sx,ssx,ilist,clist,H)
         
         # split/merge
-        k,t = split_merge!(k,t,x,z,w,m,v,s,sx,ssx,clist,cfree,ilist, zs,u2,u3,du1,du2,du3,H)
+        k,t = split_merge!(k,t,x,z,w,m,v,s,sx,ssx,clist,cfree,ilist, zs,u2,u3,H)
 
         # birth/death
         k,t = birth_death!(k,t,n,w,m,v,s,sx,ssx,clist,cfree,ilist,H)

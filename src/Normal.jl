@@ -6,7 +6,8 @@ module NormalModel # submodule for component family definitions
 export Theta, Data, likelihood, log_likelihood, prior_sample, prior_sample!, log_prior,
        construct_hyperparameters, update_parameter!, update_hyperparameters!
 
-using Distributions
+include("Random.jl")
+using .Random
 
 typealias Theta Array{Float64,1}  # theta = [mu, sigma]
 typealias Data Float64
@@ -49,7 +50,7 @@ end
 
 # Prior (Base distribution)
 sample_mu(H) = H.s*randn()+H.m
-sample_sigma(H) = sqrt(rand(InverseGamma(H.a,H.b)))
+sample_sigma(H) = sqrt(Random.inverse_gamma(H.a,H.b))
 prior_sample(H) = [sample_mu(H), sample_sigma(H)]
 prior_sample!(theta,n,H) = (for i=1:n; theta[1,i] = sample_mu(H); theta[2,i] = sample_sigma(H); end)
 prior_sample!(theta,H) = (theta[1] = sample_mu(H); theta[2] = sample_sigma(H))
@@ -74,7 +75,7 @@ function update_parameter!(theta_a,theta_b,x,z,c,H,active)
     for i = 1:length(z); if z[i]==c; r += (x[i]-theta_b[1])*(x[i]-theta_b[1]); end; end
     beta = H.b + 0.5*r
     # if active; theta_b[2] = 1/sqrt(rand(Gamma(alpha,1/beta))); end
-    if active; theta_b[2] = sqrt(rand(InverseGamma(alpha,beta))); end
+    if active; theta_b[2] = sqrt(Random.inverse_gamma(alpha,beta)); end
 
     return log_prior(theta_b,M,1/sqrt(L),alpha,beta)
 end
