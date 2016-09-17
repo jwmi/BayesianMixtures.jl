@@ -1,5 +1,5 @@
 # Random number generators for Julia
-# Original code by John D. Cook
+# This is a slightly modified and reduced version of a Julia module by John D. Cook.
 # http://www.johndcook.com/julia_rng.html
 
 module Random
