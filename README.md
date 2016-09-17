@@ -58,6 +58,14 @@ For more in-depth examples, see the [examples](examples/) folder.
 
 In addition to the Jain-Neal sampler, reversible jump MCMC is also implemented for certain classes of MFMs (specifically, univariate normal mixtures and multivariate normal mixtures with diagonal covariance). For univariate normal mixtures, we use the algorithm of Richardson and Green (1997). A copy of Peter Green's [Nmix](https://people.maths.bris.ac.uk/~mapjg/Nmix/) program is also included, for convenience.
 
+### Optional: Saving results
+
+Functions for saving/loading results from file are provided.  To use them, you need to install [JLD](https://github.com/JuliaIO/JLD.jl), as follows:
+```
+Pkg.add("JLD")
+```
+<!--If you get an error relating to HDF5, restart Julia and try `Pkg.build("HDF5")`.-->
+
 ### Optional: Plotting results
 
 Functions for plotting are also provided.  To use them, you need to install [PyPlot](https://github.com/JuliaPy/PyPlot.jl).  Installing PyPlot can be complicated, but hopefully the following commands will work:
