@@ -6,8 +6,8 @@ module MVNaaNmodel # submodule for component family definitions
 export Theta, Data, log_likelihood, log_prior, prior_sample!, new_theta, Theta_clear!, Theta_adjoin!, Theta_remove!,
        Hyperparameters, construct_hyperparameters, update_hyperparameters!, update_parameter!
 
-include("Gamma.jl")
-using .Gamma
+include("Random.jl")
+using .Random
 
 typealias Data Array{Float64,1}
 
@@ -43,7 +43,7 @@ log_likelihood(x,p) = MVNaaN_logpdf(x,p.mu,p.lambda)
 # prior: Normal(mu[i]|H.m,1/(H.c*lambda[i])) * Gamma(lambda[i]|H.a,H.b)
 log_prior(p,m,c,a,b) = (r=0.0; for i=1:p.d; r += Normal_logpdf(p.mu[i],m,c*p.lambda[i]) + Gamma_logpdf(p.lambda[i],a,b); end; r)
 log_prior(p,H) = log_prior(p,H.m,H.c,H.a,H.b)
-prior_sample!(p,H) = (for i=1:H.d; p.lambda[i] = Gamma.gamma(H.a,H.b); p.mu[i] = randn()/sqrt(H.c*p.lambda[i]) + H.m; end)
+prior_sample!(p,H) = (for i=1:H.d; p.lambda[i] = Random.gamma(H.a,H.b); p.mu[i] = randn()/sqrt(H.c*p.lambda[i]) + H.m; end)
 
 
 function construct_hyperparameters(options)
@@ -72,7 +72,7 @@ function update_parameter!(theta_a,theta_b,H,active,density)
         
         # update precision
         B = H.b + 0.5*(sum_xx[i] - 2*theta_b.mu[i]*sum_x[i] + n*theta_b.mu[i]^2) + 0.5*H.c*(theta_b.mu[i] - H.m)^2
-        if active; theta_b.lambda[i] = Gamma.gamma(A,B); end
+        if active; theta_b.lambda[i] = Random.gamma(A,B); end
         if density; logp += Gamma_logpdf(theta_b.lambda[i],A,B); end
     end
     return (density? logp : NaN)

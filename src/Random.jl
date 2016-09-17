@@ -1,13 +1,12 @@
-# Gamma random number generator for Julia
+# Random number generators for Julia
 # Original code by John D. Cook
 # http://www.johndcook.com/julia_rng.html
 
-module Gamma
+module Random
 
 function gamma(shape, rate)
     # Return a random sample from a gamma distribution
     # with pdf \propto x^{shape-1}exp(-rate*x)
-
 
     if shape <= 0.0
         error("Shape parameter must be positive, but shape = $shape")

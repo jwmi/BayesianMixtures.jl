@@ -6,8 +6,8 @@ module NormalModel
 export Theta, Data, log_likelihood, log_prior, prior_sample!, new_theta, Theta_clear!, Theta_adjoin!, Theta_remove!,
        Hyperparameters, construct_hyperparameters, update_hyperparameters!, update_parameter!
 
-include("Gamma.jl")
-using .Gamma
+include("Random.jl")
+using .Random
 
 typealias Data Float64
 
@@ -43,7 +43,7 @@ log_likelihood(x,p) = Normal_logpdf(x,p.mu,p.sigma)
 # prior: Normal(mu|H.m,H.s) * SqrtInvGamma(sigma|H.a,H.b)
 log_prior(p,m,s,a,b) = Normal_logpdf(p.mu,m,s) + SqrtInvGamma_logpdf(p.sigma,a,b)
 log_prior(p,H) = log_prior(p,H.m,H.s,H.a,H.b)
-prior_sample!(p,H) = (p.mu = randn()*H.s + H.m; p.sigma = 1/sqrt(Gamma.gamma(H.a,H.b)))
+prior_sample!(p,H) = (p.mu = randn()*H.s + H.m; p.sigma = 1/sqrt(Random.gamma(H.a,H.b)))
 new_theta(H) = Normal_params(0.0,1.0)
 Theta_clear!,Theta_adjoin!,Theta_remove! = Normal_clear!,Normal_adjoin!,Normal_remove!
 
@@ -74,7 +74,7 @@ function update_parameter!(theta_a,theta_b,H,active,density)
     # update standard deviation
     alpha = H.a + 0.5*n
     beta = H.b + 0.5*(sum_xx - 2*theta_b.mu*sum_x + n*theta_b.mu^2)
-    if active; theta_b.sigma = 1/sqrt(Gamma.gamma(alpha,beta)); end
+    if active; theta_b.sigma = 1/sqrt(Random.gamma(alpha,beta)); end
 
     return (density? log_prior(theta_b,M,1/sqrt(L),alpha,beta) : NaN)
 end
@@ -84,7 +84,7 @@ function update_hyperparameters!(H,theta,list,t,x,z)
     for k = 1:t; sum_lambdas += 1/theta[list[k]].sigma^2; end
     alpha = H.g + H.a*t
     beta = H.h + sum_lambdas
-    H.b = Gamma.gamma(alpha,beta)
+    H.b = Random.gamma(alpha,beta)
 end
 
 end # module NormalModel

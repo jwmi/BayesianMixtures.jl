@@ -1,8 +1,8 @@
 # Lower triangular matrices
 module Lower
 
-include("Gamma.jl")
-using .Gamma
+include("Random.jl")
+using .Random
 
 function Cholesky!(L,A,d)
     # Compute L lower triangular such that L*L' = A, given a d-by-d positive definite matrix A.
@@ -114,7 +114,7 @@ function sample!(L,M,nu,d)
     @assert(nu>d-1)
     for i = 1:d
         for j = 1:i-1; L[i,j] = randn(); end
-        L[i,i] = sqrt(Gamma.chi_square(nu-i+1))
+        L[i,i] = sqrt(Random.chi_square(nu-i+1))
         for j = i+1:d; L[i,j] = 0.; end
     end
     multiply!(L,M,L,d)
