@@ -112,7 +112,7 @@ end
 # ===================================================================
 
 can_save = (Pkg.installed("JLD")!=nothing)
-can_save ?  using JLD : warn("Cannot save or load results from file since JLD is not installed.")
+if can_save; using JLD; end
 
 # Save result to file.
 function save_result(filename,result)
@@ -210,11 +210,13 @@ end
 # ===================================================================
     
 can_plot = (Pkg.installed("PyPlot")!=nothing)
-can_plot ?  using PyPlot : warn("Plotting is disabled since PyPlot is not installed.")
+if can_plot; using PyPlot; end
+checkplotting() = (if !can_plot; error("Plotting is disabled since PyPlot is not installed."); end)
 
 # ---------- General plotting functions ----------
 
 function draw_now(number=0)
+    checkplotting()
     if number>0; figure(number); end
     pause(0.001) # this forces the figure to update (draw() is supposed to do this, but doesn't work for me)
     get_current_fig_manager()[:window][:raise_]() # bring figure window to the front
@@ -222,6 +224,7 @@ function draw_now(number=0)
 end
 
 function open_figure(number;clear_figure=true,figure_size=(5,2.5))
+    checkplotting()
     fig = figure(number, figsize=figure_size)
     subplots_adjust(top=0.85, bottom=0.2, left=0.15)
     clear_figure? clf() : nothing
@@ -230,6 +233,7 @@ function open_figure(number;clear_figure=true,figure_size=(5,2.5))
     return fig
 end
 function labels(title_string,xlabel_string="",ylabel_string="")
+    checkplotting()
     title(title_string,fontsize=14)
     xlabel(xlabel_string,fontsize=14)
     ylabel(ylabel_string,fontsize=14)
@@ -247,6 +251,7 @@ color_list = "cgyrbmkw"^1000
 marker_list = "ov^Ds<>p*+x1234hHd"
 
 function traceplot(values)
+    checkplotting()
     n_values = length(values)
     n_subset = min(2000,n_values)
     if (n_subset < n_values); warn("Traceplot shows only a subset of points."); end
@@ -257,6 +262,7 @@ function traceplot(values)
 end
 
 function traceplot_timewise(result,t_show)
+    checkplotting()
     timestep = result.elapsed_time/result.options.n_total
     t_show = min(result.elapsed_time,t_show)
     n_show = round(Int,t_show/timestep)
@@ -271,6 +277,7 @@ function traceplot_timewise(result,t_show)
 end
 
 function plot_t_running(result)
+    checkplotting()
     o = result.options
     cdfs = t_running(result)
     tcolors = "brgycmk"^1000
@@ -285,6 +292,7 @@ function plot_t_running(result)
 end
 
 function plot_autocorrelation(values,t_show,timestep;kwargs...)
+    checkplotting()
     a = autocorrelation(values)
     n_plot = min(round(Int,t_show/timestep+1),length(a))
     PyPlot.plot(1000*(0:n_plot-1)*timestep,a[1:n_plot],linewidth=1.5;kwargs...)
@@ -295,6 +303,7 @@ function plot_autocorrelation(values,t_show,timestep;kwargs...)
 end
 
 function plot_autocorrelation(result,t_show;kwargs...)
+    checkplotting()
     o = result.options
     timestep = result.elapsed_time/o.n_total
     plot_autocorrelation(result.t[o.n_burn+1:o.n_total],t_show,timestep;kwargs...)
@@ -303,6 +312,7 @@ function plot_autocorrelation(result,t_show;kwargs...)
 end
 
 function plot_t_posterior(result; kwargs...)
+    checkplotting()
     pt = t_posterior(result)
     PyPlot.plot(1:length(pt), pt; kwargs...)
     labels("Posterior on t","t (# of clusters)","p(t|data)")
@@ -311,6 +321,7 @@ function plot_t_posterior(result; kwargs...)
 end
 
 function plot_t_posterior_average(results; kwargs...)
+    checkplotting()
     t_posteriors = Array{Array{Float64,1},1}()
     for result in results
         push!(t_posteriors, t_posterior(result))
@@ -324,6 +335,7 @@ function plot_t_posterior_average(results; kwargs...)
 end
 
 function plot_k_posterior(result; kwargs...)
+    checkplotting()
     pk = k_posterior(result)
     PyPlot.plot(1:length(pk), pk; kwargs...)
     labels("Posterior on k","k (# of components)","p(k|data)")
@@ -332,6 +344,7 @@ function plot_k_posterior(result; kwargs...)
 end
 
 function plot_k_posterior_average(results; kwargs...)
+    checkplotting()
     k_posteriors = Array{Array{Float64,1},1}()
     for result in results
         push!(k_posteriors, k_posterior(result))
@@ -346,6 +359,7 @@ end
 
 # Posterior similarity matrix (probability that i and j are in same cluster)
 function plot_similarity_matrix(result; step=10)
+    checkplotting()
     n = result.options.n
     title("Posterior similarity matrix")
     imshow(1-similarity_matrix(result),cmap="gray",interpolation="nearest",vmin=0,vmax=1,extent=(1,n,n,1),origin="upper")
@@ -357,6 +371,7 @@ function plot_similarity_matrix(result; step=10)
 end
 
 function plot_clusters(x,z; colors=color_list, markers=marker_list, markersize=2)
+    checkplotting()
     n = length(x)
     d = length(x[1]) # dimension of data
     N = zeros(n); for i = 1:n; N[z[i]] += 1; end
@@ -387,6 +402,7 @@ function plot_clusters(x,z; colors=color_list, markers=marker_list, markersize=2
 end
 
 function rug_plot(data) # Rug plot of data
+    checkplotting()
     @assert(all(map(length,data).==1),"Rug plot only enabled for univariate data.")
     PyPlot.plot(data,zeros(length(data)),"k+",markersize = 18)
     tick_params(axis="x",direction="out",top="off")
@@ -395,6 +411,7 @@ function rug_plot(data) # Rug plot of data
 end 
 
 function plot_histogram(data; kwargs...) # Histogram of data
+    checkplotting()
     @assert(all(map(length,data).==1),"Histogram only enabled for univariate data.")
     edges,counts = hist(data,50)
     PyPlot.bar(edges[1:end-1],counts./(length(data)*diff(edges)),diff(edges); kwargs...)
@@ -403,6 +420,7 @@ function plot_histogram(data; kwargs...) # Histogram of data
 end
 
 function plot_density_estimate(result; resolution=-1, kwargs...)
+    checkplotting()
     bounds(y) = (mn=minimum(y); mx=maximum(y); s=(mx-mn)/8; (round(mn-s,0),round(mx+s,0)))
     o = result.options
     data,n = o.x,o.n
