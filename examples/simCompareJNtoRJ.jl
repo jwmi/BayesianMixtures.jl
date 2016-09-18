@@ -9,12 +9,13 @@ can_plot ? using PyPlot : warn("Skipping plots since PyPlot is not installed.")
 # Settings
 ds = [4,8,12]  # increasing dimensions
 reset_random = true  # reset the random number generator before each run
-n_total = 100000  # number of MCMC sweeps to run each algorithm
+save_figures = true  # save the figures to file
+n_total = 1000000  # number of MCMC sweeps to run each algorithm
 
-for fignum=10:12; B.open_figure(fignum); end
 fignum = 0
 for (i_d,d) in enumerate(ds)
     if reset_random; srand(0); end
+    B.open_figure(9+i_d)
 
     # Generate data
     n = 100
@@ -41,6 +42,7 @@ for (i_d,d) in enumerate(ds)
         t_show = 20  # number of seconds to show
         B.traceplot_timewise(result,t_show)
         title("$label, d = $d")
+        if save_figures; savefig("simCompareJNtoRJ-traceplot-$mode-d=$d.png",dpi=200); end
 
         # Plot autocorrelation
         B.open_figure(9+i_d; clear_figure=false)
@@ -49,6 +51,7 @@ for (i_d,d) in enumerate(ds)
         title("Autocorrelation, d = $d")
     end
     if i_d==1; legend(loc="upper right",fontsize=12); end
+    if save_figures; savefig("simCompareJNtoRJ-autocorrelation-d=$d.png",dpi=200); end
 end
 
 end # module SimCompareJNtoRJ
