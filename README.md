@@ -78,7 +78,8 @@ Hopefully that will work, but if you get errors, you can either (a) not use the 
 PyPlot uses Matplotlib, which has a Matlab-like syntax. Here's a simple example:
 ```
 using PyPlot
-x = 0:.1:10; plot(x,sin(x))
+x = 0:.1:10
+plot(x,sin(x))
 ```
 
 ## Updating to the latest version
