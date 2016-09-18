@@ -12,7 +12,7 @@ can_plot ? using PyPlot : warn("Skipping plots since PyPlot is not installed.")
 x = readdlm("datasets/galaxy.dat",' ',Float64)[:]
 
 # Specify model, data, and MCMC options
-n_total = 100000  # total number of MCMC sweeps to run
+n_total = 1000000  # total number of MCMC sweeps to run
 log_pk = "k -> log(k in (1:30)? 1/30 : 0)"   # log prior on k is Uniform{1,...,30}
 options = B.options("Normal","MFM",x,n_total; n_keep=1000,log_pk=log_pk,t_max=30)
 
