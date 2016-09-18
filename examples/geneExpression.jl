@@ -31,7 +31,7 @@ x = [((xi-mu)./sqrt(v))::Array{Float64,1} for xi in x]
 
 # Run sampler
 n_total = 1000  # number of MCMC sweeps to run the algorithm
-options = B.options("MVNaaC","MFM",x,n_total; n_keep=min(1000,n_total),t_max=20)
+options = B.options("MVNaaC","MFM",x,n_total; n_keep=1000,t_max=20)
 result = B.run_sampler(options)
 
 
