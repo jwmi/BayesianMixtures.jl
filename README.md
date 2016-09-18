@@ -66,13 +66,20 @@ Functions for saving/loading results from file are provided.  To use them, you n
 
 ### Optional: Plotting results
 
-Functions for plotting are also provided.  To use them, you need to install [PyPlot](https://github.com/JuliaPy/PyPlot.jl).  Installing PyPlot can be complicated, but hopefully the following commands will work:
+Functions for plotting are also provided.  To use them, install [PyPlot](https://github.com/JuliaPy/PyPlot.jl) by entering the following commands:
 ```
 ENV["PYTHON"]=""
+if (Pkg.installed("PyCall")!=nothing); Pkg.build("PyCall"); end
 Pkg.add("PyPlot")
+using PyPlot
 ```
-If that doesn't work, you can either (a) not use the plotting functions in BayesianMixtures, or (b) try your luck with the [PyPlot installation instructions](https://github.com/JuliaPy/PyPlot.jl).
+Hopefully that will work, but if you get errors, you can either (a) not use the plotting functions in BayesianMixtures, or (b) try your luck with the PyPlot installation instructions [here](https://github.com/JuliaPy/PyPlot.jl).  
 
+PyPlot uses Matplotlib, which has a Matlab-like syntax. Here's a simple example:
+```
+using PyPlot
+x = 0:.1:10; plot(x,sin(x))
+```
 
 ## Updating to the latest version
 
