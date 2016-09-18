@@ -13,13 +13,15 @@ Below is the process I used to compile Nmix on Mac and Windows.
 
 ### Nmix on Mac OS X
 
-- Install gfortran by following the instructions here: https://gcc.gnu.org/wiki/GFortranBinariesMacOS.
-- Unpack Nmix.tar.gz and run the following commands in the resulting folder:
+- If you haven't already done so, install the Command Line Tools (CLT) by opening a terminal window and entering: `xcode-select --install`.  In the window that pops up, click `Install` (**not** `Get Xcode`).
+- Install [gfortran](https://gcc.gnu.org/wiki/GFortranBinaries#MacOS).
+- Unpack [Nmix.tar.gz](Nmix.tar.gz) and run the following commands in the resulting folder:
 ```
 gcc -c -o sd.o -DRETS -DSUNF sd.c
 gfortran -O2 -o Nmix Nmix.f pnorm.f algama.f rgamma.f gauss4.f sd.o
 ```
-- Move the resulting binary (`Nmix`) to the examples folder. Make sure Nmix is executable: `chmod +x Nmix`.
+You may get a message like `warning: implicit declaration of function 'time' is invalid in C99`. You can ignore this.
+- Make sure Nmix is executable: `chmod +x Nmix`.
 
 ### Nmix on Windows
 
@@ -31,7 +33,7 @@ gfortran -O2 -o Nmix Nmix.f pnorm.f algama.f rgamma.f gauss4.f sd.o
 gcc -c -o sd.o -DRETS -DSUNF sd.c
 gfortran -O2 -static -o Nmix Nmix.f pnorm.f algama.f rgamma.f gauss4.f sd.o
 ```
-- Move the resulting executable (`Nmix.exe`) to the examples folder. 
+You may get a message like `warning: implicit declaration of function 'time' is invalid in C99`. You can ignore this.
 
 
 
