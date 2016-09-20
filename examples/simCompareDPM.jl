@@ -12,15 +12,16 @@ can_save ? using JLD : warn("Saving disabled since JLD is not installed.")
 # Settings
 plot_runs = true # display plots of results or not
 save_runs = true # save results to file or not
+save_figures = true  # save the figures to file
 from_file = false # true: use existing results from file, false: run sampler to generate results
 reset_random = true # reset the random number generator before each run or not
 use_hyperprior = false # put hyperprior on based distribution parameters or not
-n_values = [50,100,250,1000] #[50,100,250,1000,2500]  # sizes of data sets to simulate
+n_values = [50,100,250,1000,2500] #[50,100,250,1000,2500]  # sizes of data sets to simulate
 model_types = ["MFM","DPM"]
 data_ID = "k = 3" # label of data distribution to simulate from (k = 3 or k = 4)
 t_max = 25 # guess at an upper bound on number of clusters that will occur
-reps = 1:3 # 1:5  # replications to run for each model,n pair
-n_burn = 500 # 5000
+reps = 1:5 # 1:5  # replications to run for each model,n pair
+n_burn = 5000 # 5000
 n_total = 20*n_burn
 n_keep = 1000
 results_directory = "results-SimCompareDPM"
@@ -100,6 +101,7 @@ if can_save && can_plot && save_runs && plot_runs
             xlim(0,10); ylim(0,1)
             legend(loc="upper right", fontsize=10, numpoints=1)
         end
+        if save_figures; savefig("simCompareDPM-t_posterior-$model_type.png",dpi=200); end
     end
         
     # Plot MFM posterior on k for each n
@@ -112,6 +114,7 @@ if can_save && can_plot && save_runs && plot_runs
             xlim(0,10); ylim(0,1)
             legend(loc="upper right", fontsize=10, numpoints=1)
         end
+        if save_figures; savefig("simCompareDPM-k_posterior-$model_type.png",dpi=200); end
     end
 
     # Plot some density estimates for each model_type
@@ -122,6 +125,7 @@ if can_save && can_plot && save_runs && plot_runs
             result = B.load_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld"))
             B.plot_density_estimate(result; resolution=40)
             B.labels("$model_type density estimate, n = $n")
+            if save_figures; savefig("simCompareDPM-density-$model_type-n=$n.png",dpi=200); end
         end
     end
 
@@ -137,6 +141,7 @@ if can_save && can_plot && save_runs && plot_runs
                 z = result.z[:,index][:]
                 B.plot_clusters(x,z; markersize=5)
                 B.labels("$model_type sample clusters, n = $n, index = $index")
+                if save_figures; savefig("simCompareDPM-clusters-$model_type-n=$n-index=$index.png",dpi=200); end
             end
         end
     end

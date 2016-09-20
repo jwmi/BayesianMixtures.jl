@@ -14,23 +14,22 @@ n_total = 1000000  # number of MCMC sweeps to run each algorithm
 
 fignum = 0
 for (i_d,d) in enumerate(ds)
-    if reset_random; srand(0); end
     B.open_figure(9+i_d)
-
-    # Generate data
-    n = 100
-    xs = [randn(d) for i = 1:n]
-    zs = [Int(ceil(rand()*3)) for i = 1:n]
-    shift = (3/sqrt(d))*[-1,0,1]
-    x = convert(Array{Array{Float64,1},1},[xs[i]+shift[zs[i]] for i = 1:n])
-    mu = mean(x)  # sample mean
-    v = mean([xi.*xi for xi in x]) - mu.*mu  # sample variance
-    x = [((xi-mu)./sqrt(v))::Array{Float64,1} for xi in x] # normalized to zero mean, unit variance
-
-    
     for (label,mode,color) in [("Collapsed Jain-Neal","MVNaaC","g"),
                                ("Uncollapsed Jain-Neal","MVNaaN","r"),
                                ("RJMCMC","MVNaaRJ","b")]
+    
+        if reset_random; srand(0); end
+
+        # Generate data
+        n = 100
+        xs = [randn(d) for i = 1:n]
+        zs = [Int(ceil(rand()*3)) for i = 1:n]
+        shift = (3/sqrt(d))*[-1,0,1]
+        x = convert(Array{Array{Float64,1},1},[xs[i]+shift[zs[i]] for i = 1:n])
+        mu = mean(x)  # sample mean
+        v = mean([xi.*xi for xi in x]) - mu.*mu  # sample variance
+        x = [((xi-mu)./sqrt(v))::Array{Float64,1} for xi in x] # normalized to zero mean, unit variance
 
         # Run sampler
         println(label)
