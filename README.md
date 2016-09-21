@@ -61,7 +61,7 @@ In addition to the Jain-Neal sampler, reversible jump MCMC is also implemented f
 ### Optional: Saving results
 
 Functions for saving/loading results from file are provided.  To use them, you need to install a couple things as follows:
-- Install the Command Line Tools (CLT) by opening a terminal window and entering: `xcode-select --install`.  In the window that pops up, click `Install` (**not** `Get Xcode`).
+- Mac users (Windows users skip this step): Install the Command Line Tools (CLT) by opening a terminal window and entering: `xcode-select --install`.  In the window that pops up, click `Install` (**not** `Get Xcode`).
 - Then, install [JLD](https://github.com/JuliaIO/JLD.jl) by opening Julia and entering: `Pkg.add("JLD")`.
 
 ### Optional: Plotting results
