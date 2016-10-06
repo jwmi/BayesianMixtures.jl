@@ -136,11 +136,33 @@ function t_running(result)
     return cdfs
 end
 
+# Compute histogram with the specified bin edges,
+# where x[i] is in bin j if edges[j] < x[i] <= edges[j+1].
+function histogram(x, edges=[]; n_bins=50)
+    if isempty(edges)
+        mn,mx = minimum(x),maximum(x)
+        r = mx-mn
+        edges = linspace(mn-r/n_bins, mx+r/n_bins, n_bins)
+    else
+        n_bins = length(edges)-1
+    end
+    counts = zeros(Int,n_bins)
+    for i=1:length(x)
+        for j=1:n_bins
+            if (edges[j] < x[i] <= edges[j+1])
+                counts[j] += 1
+                break
+            end
+        end
+    end
+    return counts,edges
+end
+
 # Compute posterior on t (# of clusters)
 function t_posterior(result)
     o = result.options
     use = o.n_burn+1:o.n_total
-    edges,counts = hist(result.t[use], 0:o.t_max) # bins are: (0,1],(1,2],...,(t_max-1,t_max]
+    counts,edges = histogram(result.t[use], 0:o.t_max) # bins are: (0,1],(1,2],...,(t_max-1,t_max]
     return counts/length(use)
 end
 
@@ -413,7 +435,7 @@ end
 function plot_histogram(data; kwargs...) # Histogram of data
     checkplotting()
     @assert(all(map(length,data).==1),"Histogram only enabled for univariate data.")
-    edges,counts = hist(data,50)
+    counts,edges = histogram(data; n_bins=50)
     PyPlot.bar(edges[1:end-1],counts./(length(data)*diff(edges)),diff(edges); kwargs...)
     title("Histogram")
     draw_now()
