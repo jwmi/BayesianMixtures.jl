@@ -93,7 +93,7 @@ If you have a question or find a bug, feel free to contact me ([Jeff Miller](htt
 
 ## Licensing / Citation
 
-This package is released under an MIT license (with the exception of Peter Green's Nmix code). See [LICENSE.md](LICENSE.md). 
+This package is released under an MIT license (with the exception of Peter Green's Nmix code and John D. Cook's random number generators). See [LICENSE.md](LICENSE.md). 
 
 Please cite the following publication if you use this package in your research:
 > J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *arXiv preprint*, http://arxiv.org/abs/1502.06241, 2015.
