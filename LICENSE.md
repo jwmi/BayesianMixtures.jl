@@ -1,6 +1,6 @@
 The BayesianMixtures.jl package is licensed under the MIT "Expat" License:
 
-> Copyright (c) 2016: Jeffrey W. Miller.
+> Copyright (c) 2017: Jeffrey W. Miller.
 >
 > Permission is hereby granted, free of charge, to any person obtaining
 > a copy of this software and associated documentation files (the

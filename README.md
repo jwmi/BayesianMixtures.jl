@@ -18,7 +18,7 @@ The following component distributions are currently implemented:
 For all models, inference is performed using the Jain-Neal split-merge samplers, including both conjugate and non-conjugate cases (Jain and Neal, 2004, 2007).  For MFMs, this is done using the results of Miller and Harrison (2015).
 
 Please cite the following publication if you use this package in your research:
-> J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *arXiv preprint*, http://arxiv.org/abs/1502.06241, 2015.
+> J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. Journal of the American Statistical Association, 2017. (In press) http://arxiv.org/abs/1502.06241.
 
 
 ## Installation
@@ -96,7 +96,7 @@ If you have a question or find a bug, feel free to contact me ([Jeff Miller](htt
 This package is released under an MIT license (with the exception of Peter Green's Nmix code and John D. Cook's random number generators). See [LICENSE.md](LICENSE.md). 
 
 Please cite the following publication if you use this package in your research:
-> J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *arXiv preprint*, http://arxiv.org/abs/1502.06241, 2015.
+J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. Journal of the American Statistical Association, 2017. (In press) http://arxiv.org/abs/1502.06241.
 
 
 ## References
@@ -105,7 +105,7 @@ S. Jain and R. M. Neal. A split-merge Markov chain Monte Carlo procedure for the
 
 S. Jain and R. M. Neal. Splitting and merging components of a nonconjugate Dirichlet process mixture model. *Bayesian Analysis*, 2(3):445-472, 2007.
 
-J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *arXiv preprint*, http://arxiv.org/abs/1502.06241, 2015.
+J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. Journal of the American Statistical Association, 2017. (In press) http://arxiv.org/abs/1502.06241.
 
 S. Richardson and P. J. Green. On Bayesian analysis of mixtures with an unknown number of components. *Journal of the Royal Statistical Society: Series B (Statistical Methodology)*, 59(4):731-792, 1997.
 
