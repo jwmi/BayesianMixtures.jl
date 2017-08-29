@@ -10,7 +10,7 @@ using .Lower
 
 const NU_SIGMA_PROP = 0.1  # Metropolis proposal std dev for H.R.nu updates
     
-typealias Data Array{Float64,1}
+const Data = Array{Float64,1}
 
 # Multivariate normal distribution
 type MVN_params
@@ -114,7 +114,7 @@ type Hyperparameters
 end
 
 # likelihood: Normal(x|mean=m,Cov=inv(R)) (Note: R is represented as L*L'.)
-typealias Theta MVN_params
+const Theta = MVN_params
 Theta_clear!,Theta_adjoin!,Theta_remove! = MVN_clear!,MVN_adjoin!,MVN_remove!
 log_likelihood(x,p) = MVN_logpdf(x,p)
 # prior: Normal(m|mean=H.m.m,Cov=inv(H.m.L*H.m.L')) Wishart(R|Scale=H.R.M*H.R.M',DOF=H.R.nu)

@@ -9,8 +9,8 @@ export Theta, Data, likelihood, log_likelihood, prior_sample, prior_sample!, log
 include("Random.jl")
 using .Random
 
-typealias Theta Array{Float64,1}  # theta = [mu, sigma]
-typealias Data Float64
+const Theta = Array{Float64,1}  # theta = [mu, sigma]
+const Data = Float64
 
 # Normal distribution
 const constant = 0.5*log(2.0*pi)

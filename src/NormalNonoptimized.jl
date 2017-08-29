@@ -9,7 +9,7 @@ export Theta, Data, log_likelihood, log_prior, prior_sample!, new_theta, Theta_c
 include("Random.jl")
 using .Random
 
-typealias Data Float64
+const Data = Float64
 
 type Normal_params
     mu::Float64
@@ -38,7 +38,7 @@ Gamma_logpdf(x,a,b) = (a-1)*log(x) - b*x + a*log(b) - lgamma(a)
 # log density of SqrtInvGamma (distn of sigma when 1/sigma^2 ~ Gamma(a,b))
 SqrtInvGamma_logpdf(x,a,b) = Gamma_logpdf(1/x^2,a,b) + log(2/x^3)
 
-typealias Theta Normal_params
+const Theta = Normal_params
 log_likelihood(x,p) = Normal_logpdf(x,p.mu,p.sigma)
 # prior: Normal(mu|H.m,H.s) * SqrtInvGamma(sigma|H.a,H.b)
 log_prior(p,m,s,a,b) = Normal_logpdf(p.mu,m,s) + SqrtInvGamma_logpdf(p.sigma,a,b)

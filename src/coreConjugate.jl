@@ -194,13 +194,12 @@ function sampler(options,n_total,n_keep)
     use_hyperprior = options.use_hyperprior
 
     model_type = options.model_type
-    alpha_random,p_alpha,alpha = options.alpha_random,options.p_alpha,options.alpha
-    p_a = eval(parse(p_alpha))
+    alpha_random,alpha = options.alpha_random,options.alpha
     sigma_alpha = 0.1 # scale for MH proposals in alpha move
 
     @assert(n==length(x))
     keepers = zeros(Int,n_keep)
-    keepers[:] = round(Int,linspace(round(Int,n_total/n_keep),n_total,n_keep))
+    keepers[:] = round.(Int,linspace(round(Int,n_total/n_keep),n_total,n_keep))
     keep_index = 0
 
     t = 1  # number of clusters
@@ -220,13 +219,13 @@ function sampler(options,n_total,n_keep)
     zs = ones(Int,n)  # temporary variable used for split-merge assignments
     S = zeros(Int,n)  # temporary variable used for split-merge indices
     
-    log_Nb = log((1:n) + b)
+    log_Nb = log.((1:n) + b)
     
     # Record-keeping variables
     t_r = zeros(Int8,n_total); @assert(t_max < 2^7)
     N_r = zeros(Int16,t_max+3,n_total); @assert(n < 2^15)
     z_r = zeros(Int8,n,n_keep); @assert(t_max < 2^7)
-    theta_r = Array(Theta,0,0)
+    theta_r = Array{Theta}(0,0)
     
     for iteration = 1:n_total
         #  -------------- Resample H --------------
@@ -234,10 +233,10 @@ function sampler(options,n_total,n_keep)
             update_hyperparameters!(H,theta,list,t,x,z)
         end
         if model_type=="DPM" && alpha_random
-            # Metropolis-Hastings move for DP concentration parameter
+            # Metropolis-Hastings move for DP concentration parameter (using p_alpha(a) = exp(-a) = Exp(a|1))
             aprop = alpha*exp(randn()*sigma_alpha)
-            top = t*log(aprop) - lgamma(aprop+n) + lgamma(aprop) + log(p_a(aprop)) + log(aprop)
-            bot = t*log(alpha) - lgamma(alpha+n) + lgamma(alpha) + log(p_a(alpha)) + log(alpha)
+            top = t*log(aprop) - lgamma(aprop+n) + lgamma(aprop) - aprop + log(aprop)
+            bot = t*log(alpha) - lgamma(alpha+n) + lgamma(alpha) - alpha + log(alpha)
             if rand() < min(1.0,exp(top-bot))
                 alpha = aprop
             end

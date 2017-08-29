@@ -5,7 +5,7 @@ module MVNaaCmodel # submodule for component family definitions
 export Theta, Data, log_marginal, new_theta, Theta_clear!, Theta_adjoin!, Theta_remove!,
        Hyperparameters, construct_hyperparameters, update_hyperparameters!
 
-typealias Data Array{Float64,1}
+const Data = Array{Float64,1}
 
 type Theta
     n::Int64                 # number of data points assigned to this cluster
@@ -50,12 +50,12 @@ function construct_hyperparameters(options)
     d = length(x[1])
     mu = mean(x)
     v = mean([xi.*xi for xi in x]) - mu.*mu  # sample variance
-    @assert(all(abs(mu) .< 1e-10) && all(abs(v - 1.0) .< 1e-10), "Data must be normalized to zero mean, unit variance.")
+    @assert(all(abs.(mu) .< 1e-10) && all(abs.(v - 1.0) .< 1e-10), "Data must be normalized to zero mean, unit variance.")
     m = 0.0
     c = 1.0
     a = 1.0
     b = 1.0
-    log_Ga = lgamma(a+0.5*(1:n+1))
+    log_Ga = lgamma.(a+0.5*(1:n+1))
     constant = 0.5*log(c) + a*log(b) - lgamma(a)
     return Hyperparameters(d,m,c,a,b,constant,log_Ga)
 end

@@ -106,7 +106,7 @@ function split_merge(xs,zs0,is,js,ti,tj,tm,ti0,tj0,t,H,a,b,log_v,n_split,n_merge
         # compute acceptance probability
         log_prior_b = log_v[t-1] + lgamma(ns+b)-lgamma(a) + log_prior(tm,H)
         log_prior_a = log_v[t] + lgamma(ni+b)+lgamma(nj+b)-2*lgamma(a) + log_prior(ti0,H) + log_prior(tj0,H)
-        @assert(ni==sum(zs0) && nj==sum(!zs0))
+        @assert(ni==sum(zs0) && nj==sum(.!zs0))
         log_lik_ratio = 0.
         for k = 1:ns
             log_lik_ratio += log(likelihood(xs[k],tm)) - log(likelihood(xs[k],(zs0[k]? ti0:tj0)))
@@ -129,17 +129,16 @@ function sampler(options,n_total,n_keep)
     use_hyperprior = options.use_hyperprior
 
     model_type = options.model_type
-    alpha_random,p_alpha,alpha = options.alpha_random,options.p_alpha,options.alpha
-    p_a = eval(parse(p_alpha))
+    alpha_random,alpha = options.alpha_random,options.alpha
     sigma_alpha = 0.1 # scale for MH proposals in alpha move
 
     @assert(n==length(x))
     keepers = zeros(Int,n_keep)
-    keepers[:] = round(Int,linspace(round(Int,n_total/n_keep),n_total,n_keep))
+    keepers[:] = round.(Int,linspace(round(Int,n_total/n_keep),n_total,n_keep))
     keep_index = 0
 
     if model_type=="MFM"
-        A = a*exp(diff(log_v))
+        A = a*exp.(diff(log_v))
     else # DPM
         A = alpha*ones(n)
     end
@@ -164,7 +163,7 @@ function sampler(options,n_total,n_keep)
     zs = ones(Int,n)  # temporary variable used for split-merge assignments
     S = zeros(Int,n)  # temporary variable used for split-merge indices
     
-    log_Nb = log((1:n) + b)
+    log_Nb = log.((1:n) + b)
     
     # Record-keeping variables
     t_r = zeros(Int8,n_total); @assert(t_max < 2^7)
@@ -188,8 +187,8 @@ function sampler(options,n_total,n_keep)
         if model_type=="DPM" && alpha_random
             # Metropolis-Hastings move for DP concentration parameter
             aprop = alpha*exp(randn()*sigma_alpha)
-            top = t*log(aprop) - lgamma(aprop+n) + lgamma(aprop) + log(p_a(aprop)) + log(aprop)
-            bot = t*log(alpha) - lgamma(alpha+n) + lgamma(alpha) + log(p_a(alpha)) + log(alpha)
+            top = t*log(aprop) - lgamma(aprop+n) + lgamma(aprop) - aprop + log(aprop)
+            bot = t*log(alpha) - lgamma(alpha+n) + lgamma(alpha) - alpha + log(alpha)
             if rand() < min(1.0,exp(top-bot))
                 alpha = aprop
             end
@@ -251,7 +250,7 @@ function sampler(options,n_total,n_keep)
             i,j = indices[1],indices[2]
             c_i,c_j = z[i],z[j]
             # consider the subset of points in the clusters of i and j
-            S = find((z.==c_i)|(z.==c_j))
+            S = find((z.==c_i).|(z.==c_j))
             is,js = findfirst(S,i),findfirst(S,j)
             accept,zs,ni,nj = split_merge(x[S],(z[S].==c_i),is,js,ti,tj,tm,theta[:,c_i],theta[:,c_j],t,H,a,b,log_v,n_split,n_merge)
             if accept
@@ -263,7 +262,7 @@ function sampler(options,n_total,n_keep)
                     c_j = ordered_insert_next!(list,t)
                     
                     # z[S[zs]] = c_i is already true
-                    z[S[!zs]] = c_j
+                    z[S[.!zs]] = c_j
                     N[c_i] = ni
                     N[c_j] = nj
                     for l = 1:D

@@ -29,7 +29,7 @@ for (i_d,d) in enumerate(ds)
         x = convert(Array{Array{Float64,1},1},[xs[i]+shift[zs[i]] for i = 1:n])
         mu = mean(x)  # sample mean
         v = mean([xi.*xi for xi in x]) - mu.*mu  # sample variance
-        x = [((xi-mu)./sqrt(v))::Array{Float64,1} for xi in x] # normalized to zero mean, unit variance
+        x = [((xi-mu)./sqrt.(v))::Array{Float64,1} for xi in x] # normalized to zero mean, unit variance
 
         # Run sampler
         println(label)

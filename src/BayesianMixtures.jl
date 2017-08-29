@@ -35,7 +35,6 @@ function options(
 
         # DPM options:
         alpha_random=true, # put prior on alpha (DPM concentration parameter) or not
-        p_alpha="alpha -> exp(-alpha)", # string representation of prior on alpha
         alpha=1.0, # value of alpha (initial value if alpha_random=true)
 
         # Jain-Neal split-merge options:
@@ -50,10 +49,12 @@ function options(
     # Compute partition distribution values
     n = length(x)
     if model_type=="MFM"
-        log_v = MFM.coefficients(eval(parse(log_pk)),gamma,n,t_max+1)
+        lpk = eval(parse(log_pk))
+        log_pk_fn(k) = Base.invokelatest(lpk,k)
+        log_v = MFM.coefficients(log_pk_fn,gamma,n,t_max+1)
         a = b = gamma
     elseif model_type=="DPM"
-        log_v = (1:t_max+1)*log(alpha) - lgamma(alpha+n) + lgamma(alpha)
+        log_v = float(1:t_max+1)*log(alpha) - lgamma(alpha+n) + lgamma(alpha)
         a,b = 1.,0.
     else
         error("Invalid model_type: $model_type.")
@@ -61,11 +62,10 @@ function options(
     if mode=="MVNaaRJ"; @assert(model_type=="MFM", "RJMCMC is not implemented for DPMs."); end
 
     n_keep = min(n_keep,n_total)
-    module_ = eval(parse(mode))
-    module_name = repr(module_)
+    module_ = getfield(BayesianMixtures,Symbol(mode))
     return module_.Options(mode, model_type, x, n_total, n_keep, n_burn, verbose,
-                           use_hyperprior, t_max, gamma, log_pk, alpha_random, p_alpha, alpha,
-                           use_splitmerge, n_split, n_merge, k_max, a, b, log_v, n, module_name)
+                           use_hyperprior, t_max, gamma, log_pk, alpha_random, alpha,
+                           use_splitmerge, n_split, n_merge, k_max, a, b, log_v, n)
 end
 
 
@@ -73,7 +73,7 @@ end
 function run_sampler(options)
     o = options
     n,n_total,n_keep = o.n,o.n_total,o.n_keep
-    module_ = eval(parse(o.module_name))
+    module_ = getfield(BayesianMixtures,Symbol(o.mode))
 
     # Short run to precompile (calling precompile doesn't seem to work...)
     module_.sampler(o,1,1)
@@ -142,7 +142,7 @@ function histogram(x, edges=[]; n_bins=50)
     if isempty(edges)
         mn,mx = minimum(x),maximum(x)
         r = mx-mn
-        edges = linspace(mn-r/n_bins, mx+r/n_bins, n_bins)
+        edges = linspace(mn-r/n_bins, mx+r/n_bins, n_bins+1)
     else
         n_bins = length(edges)-1
     end
@@ -170,7 +170,9 @@ end
 function k_posterior(result; upto=result.options.t_max)
     o = result.options
     @assert(o.model_type=="MFM", "The posterior on k is not defined for the DPM.")
-    p_kt = MFM.p_kt(eval(parse(o.log_pk)),o.gamma,o.n,upto,o.t_max)
+    lpk = eval(parse(o.log_pk))
+    log_pk_fn(k) = Base.invokelatest(lpk,k)
+    p_kt = MFM.p_kt(log_pk_fn,o.gamma,o.n,upto,o.t_max)
     return p_kt*t_posterior(result)
 end
 
@@ -180,7 +182,7 @@ function density_estimate(x,result)
     n,b = o.n,o.b
     t,N,theta,keepers = result.t, result.N, result.theta, result.keepers
     n_keep = length(keepers)
-    loglik = eval(parse(o.module_name)).log_likelihood
+    loglik = getfield(BayesianMixtures,Symbol(o.mode)).log_likelihood
     r = 0.0
     n_used = 0
     for ik = 1:n_keep
@@ -250,7 +252,6 @@ function open_figure(number;clear_figure=true,figure_size=(5,2.5))
     fig = figure(number, figsize=figure_size)
     subplots_adjust(top=0.85, bottom=0.2, left=0.15)
     clear_figure? clf() : nothing
-    hold(true)
     # get_current_fig_manager()[:window][:showMaximized]() # maximize figure window
     return fig
 end
@@ -277,7 +278,7 @@ function traceplot(values)
     n_values = length(values)
     n_subset = min(2000,n_values)
     if (n_subset < n_values); warn("Traceplot shows only a subset of points."); end
-    subset = round(Int,linspace(1,n_values,n_subset))
+    subset = round.(Int,linspace(1,n_values,n_subset))
     jitter = (rand(n_subset)-0.5)/2
     PyPlot.plot(subset,values[subset]+jitter, "k.", markersize=1.0)
     draw_now()
@@ -289,7 +290,7 @@ function traceplot_timewise(result,t_show)
     t_show = min(result.elapsed_time,t_show)
     n_show = round(Int,t_show/timestep)
     n_mark = min(n_show,10000)
-    subset = round(Int,linspace(round(Int,n_show/n_mark),n_show,n_mark))
+    subset = round.(Int,linspace(round(Int,n_show/n_mark),n_show,n_mark))
     PyPlot.plot(subset*timestep,result.t[subset]+rand(n_mark)*0.5-0.25,"k.",markersize=1)
     xlim(0,t_show)
     yticks(1:maximum(result.t[subset]+1))
@@ -304,7 +305,7 @@ function plot_t_running(result)
     cdfs = t_running(result)
     tcolors = "brgycmk"^1000
     n_subset = min(2000,o.n_total)
-    subset = round(Int,linspace(1,o.n_total,n_subset))
+    subset = round.(Int,linspace(1,o.n_total,n_subset))
     for i = 1:size(cdfs,2)
         PyPlot.plot(subset,cdfs[subset,i],"$(tcolors[i])-")
     end

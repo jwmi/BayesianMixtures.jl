@@ -4,7 +4,7 @@ module MVNaaRJ
 include("Random.jl")
 using .Random
 
-typealias Data Array{Float64,1}
+const Data = Array{Float64,1}
 type Theta
     mu::Array{Float64,1}     # means
     lambda::Array{Float64,1} # precisions
@@ -36,13 +36,14 @@ function construct_hyperparameters(options)
     d = length(x[1])
     mu = mean(x)
     v = mean([xi.*xi for xi in x]) - mu.*mu  # sample variance
-    @assert(all(abs(mu) .< 1e-10) && all(abs(v - 1.0) .< 1e-10), "Data must be normalized to zero mean, unit variance.")
+    @assert(all(abs.(mu) .< 1e-10) && all(abs.(v - 1.0) .< 1e-10), "Data must be normalized to zero mean, unit variance.")
     m = 0.0
     r = 1.0
     a = 1.0
     b = 1.0
     gamma = options.gamma
-    log_pk_fn = eval(parse(options.log_pk))
+    lpk = eval(parse(options.log_pk))
+    log_pk_fn(k) = Base.invokelatest(lpk,k)
     log_pk_vec = Float64[log_pk_fn(k) for k = 1:options.k_max]
     return Hyperparameters(log_pk_vec,gamma,d,m,r,a,b)
 end
@@ -449,7 +450,7 @@ function sampler(options,n_total,n_keep)
     u2,u3 = zeros(d),zeros(d) # temporary variables for split-merge
 
     # iterations to record
-    keepers = round(Int,linspace(round(Int,n_total/n_keep),n_total,n_keep))
+    keepers = round.(Int,linspace(round(Int,n_total/n_keep),n_total,n_keep))
     keep_index = 0
     
     # records
@@ -457,7 +458,7 @@ function sampler(options,n_total,n_keep)
     t_r = zeros(Int8,n_total); @assert(kmax < 2^7)
     N_r = zeros(Int16,kmax+3,n_total); @assert(n < 2^15)
     z_r = zeros(Int8,n,n_keep); @assert(kmax < 2^7)
-    theta_r = Array(Theta,kmax+3,n_keep)
+    theta_r = Array{Theta}(kmax+3,n_keep)
     
     for iteration = 1:n_total
         # update weights, means, and variances

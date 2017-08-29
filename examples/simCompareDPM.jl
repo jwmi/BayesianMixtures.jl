@@ -23,7 +23,7 @@ t_max = 25 # guess at an upper bound on number of clusters that will occur
 reps = 1:5 # 1:5  # replications to run for each model,n pair
 n_burn = 5000 # 5000
 n_total = 20*n_burn
-n_keep = 1000
+n_keep = min(1000,n_total)
 results_directory = "results-SimCompareDPM"
 
 # Create directory for results if it doesn't exist

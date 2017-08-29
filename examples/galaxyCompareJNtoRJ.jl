@@ -27,12 +27,12 @@ outfiles = ["1.bdlog","1.bk","1.ent","1.k","1.log","1.out","1.pe"]
 for outfile in outfiles; try rm(joinpath("galx",outfile)); end; end
 
 # Run Peter Green's Nmix program
-if OS_NAME == :Darwin # if running Mac OSX
+if is_apple() # if running Mac OSX
     run(`chmod +x Nmix`)
     tic()
     run(`./Nmix -n$n_total -nb0 -ns$n_total galx`)
     elapsed_time_RJ = toq()
-elseif OS_NAME == :Windows # if running Windows
+elseif is_windows() # if running Windows
     tic()
     run(`Nmix.exe -n$n_total -nb0 -ns$n_total galx`)
     elapsed_time_RJ = toq()
@@ -62,7 +62,7 @@ k_posterior_JN = B.k_posterior(result)
 
 # Compute posterior on k from RJMCMC sampler
 use = options.n_burn+1:n_total
-k_posterior_RJ = hist(k_RJ[use], 0:options.t_max)[2]/length(use)
+k_posterior_RJ = B.histogram(k_RJ[use], 0:options.t_max)[1]/length(use)
 
 # Print posteriors on k
 println("Posteriors on k:")

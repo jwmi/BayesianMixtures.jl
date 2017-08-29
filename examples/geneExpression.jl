@@ -14,7 +14,7 @@ data_ID = "armstrong-2002-v1"
 if collection=="deSouto"
     dataset = readdlm("datasets/gene-deSouto/$(data_ID)_database.txt",'\t')
     x = convert(Array{Float64,2}, dataset[3:end,2:end])
-    x = log2(x)
+    x = log2.(x)
     x = [x[:,i]::Array{Float64,1} for i = 1:size(x,2)]
 elseif collection=="Siri"
     dataset = readdlm("datasets/gene-Siri/$(data_ID).csv",',')
@@ -26,7 +26,7 @@ end
 # Normalize to zero mean, unit variance
 mu = mean(x)
 v = mean([xi.*xi for xi in x]) - mu.*mu  # sample variance
-x = [((xi-mu)./sqrt(v))::Array{Float64,1} for xi in x]
+x = [((xi-mu)./sqrt.(v))::Array{Float64,1} for xi in x]
     
 
 # Run sampler
