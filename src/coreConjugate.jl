@@ -241,7 +241,7 @@ function sampler(options,n_total,n_keep)
                 alpha = aprop
             end
             #for i=1:t_max+1; log_v[i] = i*log(alpha) - lgamma(alpha+n) + lgamma(alpha); end
-            log_v = (1:t_max+1)*log(alpha) - lgamma(alpha+n) + lgamma(alpha)
+            log_v = float(1:t_max+1)*log(alpha) - lgamma(alpha+n) + lgamma(alpha)
         end
         
         # -------------- Resample z's --------------
