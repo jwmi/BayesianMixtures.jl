@@ -2,6 +2,7 @@
 module BayesianMixtures
 
 include("MFM.jl")
+include("Random.jl")
 
 include("Normal.jl")
 include("MVN.jl")
@@ -195,6 +196,80 @@ function density_estimate(x,result)
         end
     end
     return r/n_used
+end
+
+rand_categorical(p) = (s=rand(); i=0; while s>0; i+=1; s-=p[i]; end; i)
+rand_dirichlet(a) = (w=Random.gamma.(a,1); w/sum(w))
+counts(a,k) = (N=zeros(Int,k); for ai in a; N[ai]+=1; end; N)
+logsumexp(x) = (m = maximum(x); m == -Inf ? -Inf : log.(sum(exp.(x-m))) + m)
+
+# Convert MFM result into posterior samples of k,w,a,theta,
+# where k = number of components
+#       w = mixture weights
+#       a = assignments of data points to mixture components
+#       theta = mixture component parameters
+function sample_mixture_parameters(result,kmax)
+    r,o = result,result.options
+    @assert(o.model_type=="MFM", "This function is not defined for the DPM.")
+    lpk = eval(parse(o.log_pk))
+    log_pk_fn(k) = Base.invokelatest(lpk,k)
+    p_kt = MFM.p_kt(log_pk_fn,o.gamma,o.n,kmax,o.t_max)
+
+    module_ = getfield(BayesianMixtures,Symbol(o.mode))
+    Theta = module_.Theta
+    H = module_.construct_hyperparameters(o)
+
+    k = zeros(Int16,o.n_keep)
+    a = zeros(Int16,o.n,o.n_keep)
+    w = Array{Float64,1}[]
+    theta = Array{Theta,1}[]
+    for i = 1:o.n_keep
+        # sample k from p(k|t)
+        ikeep = r.keepers[i]
+        k[i] = rand_categorical(p_kt[:,r.t[ikeep]])
+
+        # sample a from p(a|k,C) where C = clustering
+        uz = sort(unique(r.z[:,i]))
+        assign = zeros(Int,o.t_max+3)
+        assign[uz] = randperm(k[i])[1:length(uz)]
+        a[:,i] = assign[r.z[:,i]]
+
+        # sample w from p(w|k,a)
+        push!(w, rand_dirichlet(o.gamma + counts(a[:,i],k[i])))
+
+        # sample from p(theta|k,a,phi)
+        theta_i = [module_.new_theta(H)::Theta for j=1:k[i]]
+        for j = 1:k[i]
+            c_j = findfirst(assign,j)
+            if c_j==0
+                module_.prior_sample!(theta_i[j],H)
+            else
+                theta_i[j] = r.theta[c_j,i]
+            end
+        end
+        push!(theta,theta_i)
+    end
+    return k,a,w,theta
+end
+
+# Compute deviances
+function deviances(result,w,theta)
+    r,o = result,result.options
+    module_ = getfield(BayesianMixtures,Symbol(o.mode))
+    log_f = module_.log_likelihood
+    m = length(w)
+    x,n = o.x,o.n
+    dev = zeros(m)
+    for iter = 1:m
+        k = length(w[iter])
+        logL = 0.0
+        for i = 1:n
+            l = Float64[log(w[iter][j]) + log_f(x[i],theta[iter][j]) for j = 1:k]
+            logL += logsumexp(l)
+        end
+        dev[iter] = -2*logL
+    end
+    return dev
 end
 
 # Compute the posterior similarity matrix (probability that i and j are in same cluster).
