@@ -139,19 +139,19 @@ end
 
 # Compute histogram with the specified bin edges,
 # where x[i] is in bin j if edges[j] < x[i] <= edges[j+1].
-function histogram(x, edges=[]; n_bins=50)
+function histogram(x, edges=[]; n_bins=50, weights=ones(length(x)))
     if isempty(edges)
         mn,mx = minimum(x),maximum(x)
         r = mx-mn
-        edges = linspace(mn-r/n_bins, mx+r/n_bins, n_bins+1)
+        edges = linspace(mn-r/n_bins, mx+r/n_bins, n_bins)
     else
         n_bins = length(edges)-1
     end
-    counts = zeros(Int,n_bins)
+    counts = zeros(Float64,n_bins)
     for i=1:length(x)
         for j=1:n_bins
             if (edges[j] < x[i] <= edges[j+1])
-                counts[j] += 1
+                counts[j] += weights[i]
                 break
             end
         end
@@ -252,24 +252,22 @@ function sample_mixture_parameters(result,kmax)
     return k,a,w,theta
 end
 
-# Compute deviances
-function deviances(result,w,theta)
-    r,o = result,result.options
-    module_ = getfield(BayesianMixtures,Symbol(o.mode))
+# Compute log-likelihood of the data for a sequence of mixture weights w and component parameters theta.
+function log_likelihoods(x,w,theta,mode)
+    module_ = getfield(BayesianMixtures,Symbol(mode))
     log_f = module_.log_likelihood
     m = length(w)
-    x,n = o.x,o.n
-    dev = zeros(m)
+    n = length(x)
+    loglik = zeros(m)
     for iter = 1:m
         k = length(w[iter])
-        logL = 0.0
+        ll = 0.0
         for i = 1:n
-            l = Float64[log(w[iter][j]) + log_f(x[i],theta[iter][j]) for j = 1:k]
-            logL += logsumexp(l)
+            ll += logsumexp(Float64[log(w[iter][j]) + log_f(x[i],theta[iter][j]) for j = 1:k])
         end
-        dev[iter] = -2*logL
+        loglik[iter] = ll
     end
-    return dev
+    return loglik
 end
 
 # Compute the posterior similarity matrix (probability that i and j are in same cluster).
