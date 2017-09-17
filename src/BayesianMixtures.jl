@@ -244,7 +244,7 @@ function sample_mixture_parameters(result,kmax)
             if c_j==0
                 module_.prior_sample!(theta_i[j],H)
             else
-                theta_i[j] = r.theta[c_j,i]
+                theta_i[j] = deepcopy(r.theta[c_j,i])
             end
         end
         push!(theta,theta_i)
