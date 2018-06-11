@@ -15,10 +15,10 @@ The following component distributions are currently implemented:
 - multivariate normal with diagonal covariance matrix, and
 - multivariate normal (with unconstrained covariance matrix).
 
-For all models, inference is performed using the Jain-Neal split-merge samplers, including both conjugate and non-conjugate cases (Jain and Neal, 2004, 2007).  For MFMs, this is done using the results of Miller and Harrison (2017).
+For all models, inference is performed using the Jain-Neal split-merge samplers, including both conjugate and non-conjugate cases (Jain and Neal, 2004, 2007).  For MFMs, this is done using the results of Miller and Harrison (2018).
 
 Please cite the following publication if you use this package in your research:
-> J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *Journal of the American Statistical Association*, 2017. (In press) http://arxiv.org/abs/1502.06241.
+> J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *Journal of the American Statistical Association*, Vol. 113, 2018, pp. 340-356. [(journal link)](https://www.tandfonline.com/doi/abs/10.1080/01621459.2016.1255636) [(arXiv)](http://arxiv.org/abs/1502.06241).
 
 
 ## Installation
@@ -96,7 +96,7 @@ If you have a question or find a bug, feel free to contact me ([Jeff Miller](htt
 This package is released under an MIT license (with the exception of Peter Green's Nmix code and John D. Cook's random number generators). See [LICENSE.md](LICENSE.md). 
 
 Please cite the following publication if you use this package in your research:
-J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *Journal of the American Statistical Association*, 2017. (In press) http://arxiv.org/abs/1502.06241.
+J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *Journal of the American Statistical Association*, Vol. 113, 2018, pp. 340-356.
 
 
 ## References
@@ -105,7 +105,7 @@ S. Jain and R. M. Neal. A split-merge Markov chain Monte Carlo procedure for the
 
 S. Jain and R. M. Neal. Splitting and merging components of a nonconjugate Dirichlet process mixture model. *Bayesian Analysis*, 2(3):445-472, 2007.
 
-J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *Journal of the American Statistical Association*, 2017. (In press) http://arxiv.org/abs/1502.06241.
+J. W. Miller and M. T. Harrison. Mixture models with a prior on the number of components. *Journal of the American Statistical Association*, Vol. 113, 2018, pp. 340-356.
 
 S. Richardson and P. J. Green. On Bayesian analysis of mixtures with an unknown number of components. *Journal of the Royal Statistical Society: Series B (Statistical Methodology)*, 59(4):731-792, 1997.
 
