@@ -1,6 +1,9 @@
 # Functions for computing MFM partition distribution coefficients V_n(t) and also p(k|t).
 module MFM
 
+using SpecialFunctions
+lgamma_(x) = logabsgamma(x)[1]
+
 logsumexp(a,b) = (m = max(a,b); m == -Inf ? -Inf : log(exp(a-m) + exp(b-m)) + m)
 
 # Compute log_v[t] = log(V_n(t)) under the given MFM parameters, for t=1:upto.
@@ -13,7 +16,7 @@ function coefficients(log_pk,gamma,n,upto)
         while abs(a-c) > tolerance || p < 1.0-tolerance  # Note: The first condition is false when a = c = -Inf
             if k >= t
                 a = c
-                b = lgamma(k+1)-lgamma(k-t+1) - lgamma(k*gamma+n)+lgamma(k*gamma) + log_pk(k)
+                b = lgamma_(k+1)-lgamma_(k-t+1) - lgamma_(k*gamma+n)+lgamma_(k*gamma) + log_pk(k)
                 c = logsumexp(a,b)
             end
             p += exp(log_pk(k))
@@ -30,7 +33,7 @@ function p_kt(log_pk,gamma,n,upto_k,upto_t)
     log_v = coefficients(log_pk,gamma,n,upto_t)
     p = zeros(upto_k,upto_t)
     for k = 1:upto_k, t = 1:min(k,upto_t)
-        b = lgamma(k+1)-lgamma(k-t+1) - lgamma(k*gamma+n)+lgamma(k*gamma) + log_pk(k)
+        b = lgamma_(k+1)-lgamma_(k-t+1) - lgamma_(k*gamma+n)+lgamma_(k*gamma) + log_pk(k)
         p[k,t] = exp(b - log_v[t])
     end
     return p

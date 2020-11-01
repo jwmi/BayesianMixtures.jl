@@ -1,5 +1,5 @@
 
-type Options
+struct Options
     mode::String
     model_type::String
     x::Array{Data,1}
@@ -29,7 +29,7 @@ type Options
     n::Int64
 end
 
-type Result
+struct Result
     options::Options
     t::Array{Int8,1}
     N::Array{Int16,2}

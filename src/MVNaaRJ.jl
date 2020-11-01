@@ -1,11 +1,16 @@
 # Reversible jump MCMC for axis-aligned multivariate normal mixtures, using a conjugate prior.
 module MVNaaRJ
 
-include("Random.jl")
-using .Random
+include("RandomNumbers.jl")
+using .RandomNumbers
+
+using Statistics
+using SpecialFunctions
+lgamma_(x) = logabsgamma(x)[1]
+lbeta_(a,b) = (logabsbeta(a,b))[1]
 
 const Data = Array{Float64,1}
-type Theta
+mutable struct Theta
     mu::Array{Float64,1}     # means
     lambda::Array{Float64,1} # precisions
 end
@@ -18,7 +23,7 @@ logsumexp(a,b) = (m = max(a,b); m == -Inf ? -Inf : log(exp(a-m) + exp(b-m)) + m)
 lognormpdf(x,m,v) = -0.5*(x-m)*(x-m)/v - 0.5*log(2*pi*v)
 logmvnpdf(x,m,v,c) = (l=0.0; for j=1:length(x); l += lognormpdf(x[j],m[c,j],v[c,j]); end; l)
 
-type Hyperparameters
+mutable struct Hyperparameters
     log_pk_vec::Array{Float64,1} # log of prior on the number of components
     gamma::Float64 # Dirichlet parameter
     d::Int64    # dimension
@@ -36,20 +41,20 @@ function construct_hyperparameters(options)
     d = length(x[1])
     mu = mean(x)
     v = mean([xi.*xi for xi in x]) - mu.*mu  # sample variance
-    @assert(all(abs.(mu) .< 1e-10) && all(abs.(v - 1.0) .< 1e-10), "Data must be normalized to zero mean, unit variance.")
+    @assert(all(abs.(mu) .< 1e-10) && all(abs.(v .- 1.0) .< 1e-10), "Data must be normalized to zero mean, unit variance.")
     m = 0.0
     r = 1.0
     a = 1.0
     b = 1.0
     gamma = options.gamma
-    lpk = eval(parse(options.log_pk))
+    lpk = eval(Meta.parse(options.log_pk))
     log_pk_fn(k) = Base.invokelatest(lpk,k)
     log_pk_vec = Float64[log_pk_fn(k) for k = 1:options.k_max]
     return Hyperparameters(log_pk_vec,gamma,d,m,r,a,b)
 end
 
 
-type List
+mutable struct List
     first::Int64
     next::Array{Int64,1}
     List(maxlen) = (l=new(); l.first=0; l.next=zeros(Int64,maxlen); return l)
@@ -69,7 +74,7 @@ function remove!(l::List,i) # Note: i must already be in the list.
 end
 #pr(l::List) = (i=l.first; while i!=0; print(i," "); i=l.next[i]; end; println())
 
-type IndexList
+mutable struct IndexList
     first::Array{Int64,1}
     next::Array{Int64,1}
     IndexList(kmax,n) = (l=new(); l.first=zeros(Int64,kmax); l.next=zeros(Int64,n); return l)
@@ -149,7 +154,7 @@ function update_parameters!(w,m,v,s,sx,ssx,clist,H)
     c = clist.first
     w_sum = 0.0
     while c != 0
-        w[c] = Random.gamma(H.gamma+s[c],1)
+        w[c] = RandomNumbers.gamma(H.gamma+s[c],1)
         w_sum += w[c]
         c = clist.next[c]
     end
@@ -170,7 +175,7 @@ function update_parameters!(w,m,v,s,sx,ssx,clist,H)
                 # println(0.5*(ssx[c,j] - 2*m[c,j]*sx[c,j] + s[c]*m[c,j]*m[c,j]))
                 # println(0.5*H.r*(m[c,j]-H.m)*(m[c,j]-H.m))
             # end
-            v[c,j] = Random.inverse_gamma(A,B)
+            v[c,j] = RandomNumbers.inverse_gamma(A,B)
         end
         
         # normalize weights
@@ -187,10 +192,10 @@ function log_prior_ratio(k,w,m,v,cm,c1,c2,s1,s2,H)
         siv += 1/v[c1,j] + 1/v[c2,j] - 1/v[cm,j]
     end
     log_rprior = (H.log_pk_vec[k+1] - H.log_pk_vec[k] # prior on k
-               + (H.gamma-1)*log(w[c1]*w[c2]/w[cm]) - lbeta(H.gamma,k*H.gamma) # prior on w
+               + (H.gamma-1)*log(w[c1]*w[c2]/w[cm]) - lbeta_(H.gamma,k*H.gamma) # prior on w
                + s1*log(w[c1]) + s2*log(w[c2]) - (s1+s2)*log(w[cm]) # prior on z
                + 0.5*H.d*log(H.r/(2*pi)) - 0.5*H.r*ssm - 0.5*slv # prior on m
-               + H.d*H.a*log(H.b) - H.d*lgamma(H.a) + (-H.a-1)*slv - H.b*siv) # prior on v
+               + H.d*H.a*log(H.b) - H.d*lgamma_(H.a) + (-H.a-1)*slv - H.b*siv) # prior on v
     return log_rprior
 end
 
@@ -209,9 +214,9 @@ function split_merge!(k,t,x,z,w,m,v,s,sx,ssx,clist,cfree,ilist, zs,u2,u3,H)
         c2 = pop!(cfree)
         # sample u's
         log_pu = 0.0
-        u1 = Random.beta(2,2); log_pu += log(6*u1*(1-u1))
+        u1 = RandomNumbers.beta(2,2); log_pu += log(6*u1*(1-u1))
         for j = 1:H.d
-            u2[j] = Random.beta(2,2); log_pu += log(6*u2[j]*(1-u2[j]))
+            u2[j] = RandomNumbers.beta(2,2); log_pu += log(6*u2[j]*(1-u2[j]))
             u3[j] = rand(); # log_pu += 0.0
         end
         # split w, m, and v
@@ -362,14 +367,14 @@ function birth_death!(k,t,n,w,m,v,s,sx,ssx,clist,cfree,ilist,H)
     k0 = k-t # number of empty components
     if rand() < 0.5 # propose birth of an empty component
         c = pop!(cfree)
-        w[c] = Random.beta(1,k)
+        w[c] = RandomNumbers.beta(1,k)
         for j = 1:H.d
-            v[c,j] = Random.inverse_gamma(H.a,H.b)
+            v[c,j] = RandomNumbers.inverse_gamma(H.a,H.b)
             m[c,j] = randn()*sqrt(v[c,j]/H.r) + H.m
         end
         log_A = (H.log_pk_vec[k+1] - H.log_pk_vec[k]
               + (n+k*(H.gamma-1))*log(1-w[c]) + (H.gamma-1)*log(w[c])
-              + lbeta(1,k) - lbeta(H.gamma,k*H.gamma) + log(k+1) - log(k0+1))
+              + lbeta_(1,k) - lbeta_(H.gamma,k*H.gamma) + log(k+1) - log(k0+1))
         p_accept = min(1,exp(log_A))
         
         # accept or reject
@@ -395,7 +400,7 @@ function birth_death!(k,t,n,w,m,v,s,sx,ssx,clist,cfree,ilist,H)
         # compute acceptance probability
         log_A = (H.log_pk_vec[k] - H.log_pk_vec[k-1]
               + (n+(k-1)*(H.gamma-1))*log(1-w[c]) + (H.gamma-1)*log(w[c])
-              + lbeta(1,k-1) - lbeta(H.gamma,(k-1)*H.gamma) + log(k) - log(k0))
+              + lbeta_(1,k-1) - lbeta_(H.gamma,(k-1)*H.gamma) + log(k) - log(k0))
         p_accept = min(1,exp(-log_A))
         
         # accept or reject
@@ -433,7 +438,7 @@ function sampler(options,n_total,n_keep)
     ilist = IndexList(kmax,n) # lists of indices assigned to each component
     
     # initialize with a single component
-    z[:] = 1
+    z[:] .= 1
     s[1] = n
     m[1,:] = mean(x) # initialize to the sample mean
     v[1,:] = mean([(xi-vec(m[1,:])).^2 for xi in x]) # initialize to the sample variance
@@ -450,7 +455,7 @@ function sampler(options,n_total,n_keep)
     u2,u3 = zeros(d),zeros(d) # temporary variables for split-merge
 
     # iterations to record
-    keepers = round.(Int,linspace(round(Int,n_total/n_keep),n_total,n_keep))
+    keepers = round.(Int,range(round(Int,n_total/n_keep),stop=n_total,length=n_keep))
     keep_index = 0
     
     # records
@@ -458,7 +463,7 @@ function sampler(options,n_total,n_keep)
     t_r = zeros(Int8,n_total); @assert(kmax < 2^7)
     N_r = zeros(Int16,kmax+3,n_total); @assert(n < 2^15)
     z_r = zeros(Int8,n,n_keep); @assert(kmax < 2^7)
-    theta_r = Array{Theta}(kmax+3,n_keep)
+    theta_r = Array{Theta}(undef,kmax+3,n_keep)
     
     for iteration = 1:n_total
         # update weights, means, and variances

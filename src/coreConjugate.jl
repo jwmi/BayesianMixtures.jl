@@ -1,4 +1,7 @@
 
+using SpecialFunctions
+lgamma_(x) = logabsgamma(x)[1]
+
 logsumexp(a,b) = (m = max(a,b); m == -Inf ? -Inf : log(exp(a-m) + exp(b-m)) + m)
 
 function randp(p,k)
@@ -130,8 +133,8 @@ function split_merge!(x,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
         log_prop_ba = 0.0  # log(1)
         
         # compute acceptance probability
-        log_prior_b = log_v[t+1] + lgamma(ni+b)+lgamma(nj+b)-2*lgamma(a)
-        log_prior_a = log_v[t] + lgamma(ns+b)-lgamma(a)
+        log_prior_b = log_v[t+1] + lgamma_(ni+b)+lgamma_(nj+b)-2*lgamma_(a)
+        log_prior_a = log_v[t] + lgamma_(ns+b)-lgamma_(a)
         log_lik_ratio = log_marginal(ti,H) + log_marginal(tj,H) - log_marginal(ti0,H)
         p_accept = min(1.0, exp(log_prop_ba-log_prop_ab + log_prior_b-log_prior_a + log_lik_ratio))
         #println("split proposal: ",p_accept)
@@ -160,8 +163,8 @@ function split_merge!(x,z,zs,S,theta,list,N,t,H,a,b,log_v,n_split,n_merge)
         log_prop_ba,ni,nj = restricted_Gibbs!(zs,z,ti,ti0,tj,tj0,ci,ci0,cj,cj0,ni,nj,i,j,S,ns,x,b,H,false)
         
         # compute acceptance probability
-        log_prior_b = log_v[t-1] + lgamma(ns+b)-lgamma(a)
-        log_prior_a = log_v[t] + lgamma(ni+b)+lgamma(nj+b)-2*lgamma(a)
+        log_prior_b = log_v[t-1] + lgamma_(ns+b)-lgamma_(a)
+        log_prior_a = log_v[t] + lgamma_(ni+b)+lgamma_(nj+b)-2*lgamma_(a)
         log_lik_ratio = log_marginal(tm,H) - log_marginal(ti0,H) - log_marginal(tj0,H)
         p_accept = min(1.0, exp(log_prop_ba-log_prop_ab + log_prior_b-log_prior_a + log_lik_ratio))
         #println("merge proposal: ",p_accept)
@@ -199,7 +202,7 @@ function sampler(options,n_total,n_keep)
 
     @assert(n==length(x))
     keepers = zeros(Int,n_keep)
-    keepers[:] = round.(Int,linspace(round(Int,n_total/n_keep),n_total,n_keep))
+    keepers[:] = round.(Int,range(round(Int,n_total/n_keep),stop=n_total,length=n_keep))
     keep_index = 0
 
     t = 1  # number of clusters
@@ -219,13 +222,13 @@ function sampler(options,n_total,n_keep)
     zs = ones(Int,n)  # temporary variable used for split-merge assignments
     S = zeros(Int,n)  # temporary variable used for split-merge indices
     
-    log_Nb = log.((1:n) + b)
+    log_Nb = log.((1:n) .+ b)
     
     # Record-keeping variables
     t_r = zeros(Int8,n_total); @assert(t_max < 2^7)
     N_r = zeros(Int16,t_max+3,n_total); @assert(n < 2^15)
     z_r = zeros(Int8,n,n_keep); @assert(t_max < 2^7)
-    theta_r = Array{Theta}(0,0)
+    theta_r = Array{Theta}(undef,0,0)
     
     for iteration = 1:n_total
         #  -------------- Resample H --------------
@@ -235,13 +238,13 @@ function sampler(options,n_total,n_keep)
         if model_type=="DPM" && alpha_random
             # Metropolis-Hastings move for DP concentration parameter (using p_alpha(a) = exp(-a) = Exp(a|1))
             aprop = alpha*exp(randn()*sigma_alpha)
-            top = t*log(aprop) - lgamma(aprop+n) + lgamma(aprop) - aprop + log(aprop)
-            bot = t*log(alpha) - lgamma(alpha+n) + lgamma(alpha) - alpha + log(alpha)
+            top = t*log(aprop) - lgamma_(aprop+n) + lgamma_(aprop) - aprop + log(aprop)
+            bot = t*log(alpha) - lgamma_(alpha+n) + lgamma_(alpha) - alpha + log(alpha)
             if rand() < min(1.0,exp(top-bot))
                 alpha = aprop
             end
-            #for i=1:t_max+1; log_v[i] = i*log(alpha) - lgamma(alpha+n) + lgamma(alpha); end
-            log_v = float(1:t_max+1)*log(alpha) - lgamma(alpha+n) + lgamma(alpha)
+            #for i=1:t_max+1; log_v[i] = i*log(alpha) - lgamma_(alpha+n) + lgamma_(alpha); end
+            log_v = float(1:t_max+1)*log(alpha) .- lgamma_(alpha+n) .+ lgamma_(alpha)
         end
         
         # -------------- Resample z's --------------

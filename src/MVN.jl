@@ -8,12 +8,18 @@ export Theta, Data, log_likelihood, log_prior, prior_sample!, new_theta, Theta_c
 include("Lower.jl")
 using .Lower
 
+using Statistics
+using LinearAlgebra
+using SpecialFunctions
+lgamma_(x) = logabsgamma(x)[1]
+eye(d) = collect(Diagonal(ones(d)))
+
 const NU_SIGMA_PROP = 0.1  # Metropolis proposal std dev for H.R.nu updates
     
 const Data = Array{Float64,1}
 
 # Multivariate normal distribution
-type MVN_params
+mutable struct MVN_params
     # read/write
     m::Array{Float64,1} # mean
     # read/restricted-write (must notify after writing)
@@ -49,7 +55,7 @@ MVN_remove!(p,x) = (for i=1:p.d; p.sum_x[i]-=x[i]; for j=1:p.d; p.sum_xx[i,j]-=x
 
 
 # Wishart distribution
-type Wishart_params
+mutable struct Wishart_params
     # read/restricted-write (must notify after writing)
     W::Array{Float64,2} # inverse of the mean matrix, i.e., W = inv(nu*V)
     # read-only
@@ -74,7 +80,7 @@ type Wishart_params
 end
 # Helper functions
 matrix_dot(A,B,d) = (r=0.; for i=1:d*d; r += A[i]*B[i]; end; r)
-Wishart_constant(p) = (d=p.d; nu=p.nu; r=0.; for j=1:d; r += lgamma(0.5*(nu+1-j)); end;
+Wishart_constant(p) = (d=p.d; nu=p.nu; r=0.; for j=1:d; r += lgamma_(0.5*(nu+1-j)); end;
     0.5*nu*Lower.logdetsq(p.M,d) + 0.5*nu*d*log(2) + 0.25*d*(d-1)*log(pi) + r)
 # Interface functions
 # Sample L (lower triangular) such that R = L*L' ~ Wishart(Scale=M*M', DOF=nu)
@@ -90,16 +96,16 @@ Wishart_adjoin!(p,R,logdetR) = (for i=1:p.d*p.d; p.sum_R[i]+=R[i]; end; p.sum_lo
 
 
 # # LogGamma distribution (X = log(Y) where Y~Gamma(a,b))
-type LogGamma_params
+mutable struct LogGamma_params
     a::Float64
     b::Float64
     c::Float64
-    LogGamma_params(a,b) = (p=new(); p.a=a; p.b=b; p.c=lgamma(a)-a*log(b); p)
+    LogGamma_params(a,b) = (p=new(); p.a=a; p.b=b; p.c=lgamma_(a)-a*log(b); p)
 end
 LogGamma_logpdf(x,p) = p.a*x - p.b*exp(x) - p.c
 
 
-type Hyperparameters
+mutable struct Hyperparameters
     m::MVN_params # parameters of m's (component means)
     R::Wishart_params # parameters of R's (component precisions)
     mm::MVN_params # parameters of m.m
@@ -131,7 +137,7 @@ function construct_hyperparameters(options)
     n,d = length(x),length(x[1])
     m_hat = mean(x)
     C_hat = sum_outer(x,m_hat,d,n)/n
-    R_hat = inv(cholfact(C_hat))
+    R_hat = inv(cholesky(C_hat))
     
     mm = MVN_params(m_hat,R_hat) # these are fixed
     mR = Wishart_params(d,C_hat) # these are fixed
@@ -182,7 +188,7 @@ function NormalWishart_update!(a,b,m_params,R_params,H,active,density)
     if active; Wishart_sample!(b.L, H.Rp); MVN_notify_L!(b); end
     
     # compute density
-    return (density? MVN_logpdf(b.m, H.mp) + Wishart_logpdf(MVN_get_R!(b), b.L, H.Rp) : NaN)
+    return (density ? MVN_logpdf(b.m, H.mp) + Wishart_logpdf(MVN_get_R!(b), b.L, H.Rp) : NaN)
 end
 
 function Wishart_update!(p,W_params,nu_params,H)

@@ -1,11 +1,16 @@
 # Run simulations with multivariate normal mixtures to compare the MFM with the DPM.
 module SimCompareDPM
 
+using Random
+using LinearAlgebra
 using BayesianMixtures
 B = BayesianMixtures
 Theta = B.MVN.Theta
-can_plot = (Pkg.installed("PyPlot")!=nothing)
-can_save = (Pkg.installed("JLD")!=nothing)
+
+using Pkg
+packages_installed = [pkg.name for pkg in collect(values(Pkg.dependencies()))]
+can_plot = ("PyPlot" in packages_installed)
+can_save = ("JLD" in packages_installed)
 can_plot ? using PyPlot : warn("Skipping plots since PyPlot is not installed.")
 can_save ? using JLD : warn("Saving disabled since JLD is not installed.")
 
@@ -36,17 +41,17 @@ if !from_file
         for rep in reps
         
             # Simulate from the data distribution
-            if reset_random; srand(n+rep); end
+            if reset_random; Random.seed!(n+rep); end
             if data_ID=="k = 3"
                 k = 3
                 d = 2
                 probabilities = [0.45,0.3,0.25]
                 angle = pi/4
                 R = [cos(angle) -sin(angle);sin(angle) cos(angle)]
-                V = diagm([2.5,0.2])
-                theta = [Theta([4,4],eye(d)),
+                V = collect(Diagonal([2.5,0.2]))
+                theta = [Theta([4,4],collect(Diagonal(ones(d)))),
                          Theta([7,4],inv(R*V*R')),
-                         Theta([6,2],diagm(1 ./ [3,0.1]))]
+                         Theta([6,2],collect(Diagonal(1 ./ [3,0.1])))]
                 x,z = B.MVN.mixrnd(n,probabilities,theta)
                 true_distribution = (k,probabilities,theta,z)
                 @assert(n>2*d)
@@ -57,11 +62,11 @@ if !from_file
                 probabilities = [0.44,0.3,0.25,0.01]
                 angle = pi/4
                 R = [cos(angle) -sin(angle);sin(angle) cos(angle)]
-                V = diagm([2.5,0.2])
-                theta = [Theta([4,4],eye(d)),
+                V = collect(Diagonal([2.5,0.2]))
+                theta = [Theta([4,4],collect(Diagonal(ones(d)))),
                          Theta([7,4],inv(R*V*R')),
-                         Theta([6,2],diagm(1 ./ [3,0.1])),
-                         Theta([8,11],diagm(1 ./ [0.1,0.1]))]
+                         Theta([6,2],collect(Diagonal(1 ./ [3,0.1]))),
+                         Theta([8,11],collect(Diagonal(1 ./ [0.1,0.1])))]
                 x,z = B.MVN.mixrnd(n,probabilities,theta)
                 true_distribution = (k,probabilities,theta,z)
                 @assert(n>2*d)
@@ -71,7 +76,7 @@ if !from_file
             
             for model_type in model_types        
                 # Run sampler
-                if reset_random; srand(n+rep); end
+                if reset_random; Random.seed!(n+rep); end
                 options = B.options("MVN",model_type,x,n_total; 
                     n_keep=n_keep, n_burn=n_burn, use_hyperprior=use_hyperprior, t_max=t_max)
                 result = B.run_sampler(options)
@@ -81,7 +86,6 @@ if !from_file
                     B.save_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld"),result)
                 end
             end
-            gc()  # (call the garbage collector to free up memory)
         end
     end
 end
@@ -93,6 +97,7 @@ if can_save && can_plot && save_runs && plot_runs
 
     # Plot posterior on t for each n, model_type
     for model_type in model_types
+        global figure_number
         B.open_figure(figure_number+=1)
         for (i_n,n) in enumerate(n_values)
             results = [B.load_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld")) for rep in reps]
@@ -106,6 +111,7 @@ if can_save && can_plot && save_runs && plot_runs
         
     # Plot MFM posterior on k for each n
     for model_type in intersect(model_types,["MFM"])
+        global figure_number
         B.open_figure(figure_number+=1)
         for (i_n,n) in enumerate(n_values)
             results = [B.load_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld")) for rep in reps]
@@ -120,6 +126,7 @@ if can_save && can_plot && save_runs && plot_runs
     # Plot some density estimates for each model_type
     for model_type in model_types
         for (i_n,n) in enumerate(intersect(n_values,[50,250,1000]))
+            global figure_number
             B.open_figure(figure_number+=1;figure_size=(6,5))
             rep = 1
             result = B.load_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld"))
@@ -136,6 +143,7 @@ if can_save && can_plot && save_runs && plot_runs
             indices = [800,900,1000]
             result = B.load_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld"))
             for index in intersect(1:n_keep,indices)
+                global figure_number
                 B.open_figure(figure_number+=1;figure_size=(6,5))
                 x = result.options.x
                 z = result.z[:,index][:]

@@ -6,12 +6,16 @@ module MVNaaNmodel # submodule for component family definitions
 export Theta, Data, log_likelihood, log_prior, prior_sample!, new_theta, Theta_clear!, Theta_adjoin!, Theta_remove!,
        Hyperparameters, construct_hyperparameters, update_hyperparameters!, update_parameter!
 
-include("Random.jl")
-using .Random
+include("RandomNumbers.jl")
+using .RandomNumbers
+
+using Statistics
+using SpecialFunctions
+lgamma_(x) = logabsgamma(x)[1]
 
 const Data = Array{Float64,1}
 
-type Theta
+mutable struct Theta
     mu::Array{Float64,1}     # means
     lambda::Array{Float64,1} # precisions
     d::Int64                 # dimension
@@ -29,7 +33,7 @@ Theta_clear!(p) = (for i=1:p.d; p.sum_x[i] = 0.0; p.sum_xx[i] = 0.0; end; p.n = 
 Theta_adjoin!(p,x) = (for i=1:p.d; p.sum_x[i] += x[i]; p.sum_xx[i] += x[i]*x[i]; end; p.n += 1)
 Theta_remove!(p,x) = (for i=1:p.d; p.sum_x[i] -= x[i]; p.sum_xx[i] -= x[i]*x[i]; end; p.n -= 1)
 
-type Hyperparameters
+mutable struct Hyperparameters
     d::Int64    # dimension
     m::Float64  # prior mean of mu's
     c::Float64  # prior precision multiplier for mu's
@@ -37,13 +41,13 @@ type Hyperparameters
     b::Float64  # prior rate of lambda's
 end
 
-Gamma_logpdf(x,a,b) = (a-1)*log(x) - b*x + a*log(b) - lgamma(a)
+Gamma_logpdf(x,a,b) = (a-1)*log(x) - b*x + a*log(b) - lgamma_(a)
 
 log_likelihood(x,p) = MVNaaN_logpdf(x,p.mu,p.lambda)
 # prior: Normal(mu[i]|H.m,1/(H.c*lambda[i])) * Gamma(lambda[i]|H.a,H.b)
 log_prior(p,m,c,a,b) = (r=0.0; for i=1:p.d; r += Normal_logpdf(p.mu[i],m,c*p.lambda[i]) + Gamma_logpdf(p.lambda[i],a,b); end; r)
 log_prior(p,H) = log_prior(p,H.m,H.c,H.a,H.b)
-prior_sample!(p,H) = (for i=1:H.d; p.lambda[i] = Random.gamma(H.a,H.b); p.mu[i] = randn()/sqrt(H.c*p.lambda[i]) + H.m; end)
+prior_sample!(p,H) = (for i=1:H.d; p.lambda[i] = RandomNumbers.gamma(H.a,H.b); p.mu[i] = randn()/sqrt(H.c*p.lambda[i]) + H.m; end)
 
 
 function construct_hyperparameters(options)
@@ -51,7 +55,7 @@ function construct_hyperparameters(options)
     d = length(x[1])
     mu = mean(x)
     v = mean([xi.*xi for xi in x]) - mu.*mu  # sample variance
-    @assert(all(abs.(mu) .< 1e-10) && all(abs.(v - 1.0) .< 1e-10), "Data must be normalized to zero mean, unit variance.")
+    @assert(all(abs.(mu) .< 1e-10) && all(abs.(v .- 1.0) .< 1e-10), "Data must be normalized to zero mean, unit variance.")
     m = 0.0
     c = 1.0
     a = 1.0
@@ -72,10 +76,10 @@ function update_parameter!(theta_a,theta_b,H,active,density)
         
         # update precision
         B = H.b + 0.5*(sum_xx[i] - 2*theta_b.mu[i]*sum_x[i] + n*theta_b.mu[i]^2) + 0.5*H.c*(theta_b.mu[i] - H.m)^2
-        if active; theta_b.lambda[i] = Random.gamma(A,B); end
+        if active; theta_b.lambda[i] = RandomNumbers.gamma(A,B); end
         if density; logp += Gamma_logpdf(theta_b.lambda[i],A,B); end
     end
-    return (density? logp : NaN)
+    return (density ? logp : NaN)
 end
 
 function update_hyperparameters!(H,theta,list,t,x,z)

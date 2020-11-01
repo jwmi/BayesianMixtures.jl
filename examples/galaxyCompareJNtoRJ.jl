@@ -1,10 +1,15 @@
 # Compare Jain-Neal sampler to Reversible Jump on the galaxy dataset.
 module GalaxyCompareJNtoRJ
 
+using PyPlot
+using DelimitedFiles
 using BayesianMixtures
 B = BayesianMixtures
-can_plot = (Pkg.installed("PyPlot")!=nothing)
-can_plot ? using PyPlot : warn("Skipping plots since PyPlot is not installed.")
+
+using Pkg
+packages_installed = [pkg.name for pkg in collect(values(Pkg.dependencies()))]
+can_plot = ("PyPlot" in packages_installed)
+can_plot ? using PyPlot : @warn("Skipping plots since PyPlot is not installed.")
 
 # ==================== Run Jain-Neal sampler ====================
 
@@ -13,7 +18,7 @@ x = readdlm("datasets/galaxy.dat",' ',Float64)[:]
 
 # Specify model, data, and MCMC options
 n_total = 1000000  # total number of MCMC sweeps to run
-log_pk = "k -> log(k in (1:30)? 1/30 : 0)"   # log prior on k is Uniform{1,...,30}
+log_pk = "k -> log(k in (1:30) ? 1/30 : 0)"   # log prior on k is Uniform{1,...,30}
 options = B.options("Normal","MFM",x,n_total; n_keep=1000,log_pk=log_pk,t_max=30)
 
 # Run MCMC sampler
@@ -24,18 +29,14 @@ result = B.run_sampler(options)
 # Remove old output files
 if (!isdir("galx")); mkdir("galx"); end
 outfiles = ["1.bdlog","1.bk","1.ent","1.k","1.log","1.out","1.pe"]
-for outfile in outfiles; try rm(joinpath("galx",outfile)); end; end
+for outfile in outfiles; try rm(joinpath("galx",outfile)); catch; end; end
 
 # Run Peter Green's Nmix program
-if is_apple() # if running Mac OSX
+if Sys.isapple() # if running Mac OSX
     run(`chmod +x Nmix`)
-    tic()
-    run(`./Nmix -n$n_total -nb0 -ns$n_total galx`)
-    elapsed_time_RJ = toq()
-elseif is_windows() # if running Windows
-    tic()
-    run(`Nmix.exe -n$n_total -nb0 -ns$n_total galx`)
-    elapsed_time_RJ = toq()
+    elapsed_time_RJ = (@elapsed run(`./Nmix -n$n_total -nb0 -ns$n_total galx`))
+elseif Sys.iswindows() # if running Windows
+    elapsed_time_RJ = (@elapsed run(`Nmix.exe -n$n_total -nb0 -ns$n_total galx`))
 else
     error("Only Mac and Windows are currently supported for running Green's Nmix program.")
 end
@@ -49,7 +50,8 @@ k_RJ = zeros(Int64,n_total)
 t_RJ = zeros(Int64,n_total)
 i = 1
 for j = 1:n_total
-    k,t = output[i,find(output[i,:].!="")]
+	global i
+    k,t = output[i,findall(output[i,:].!="")]
     k_RJ[j] = k
     t_RJ[j] = t
     i += k+1
@@ -67,6 +69,7 @@ k_posterior_RJ = B.histogram(k_RJ[use], 0:options.t_max)[1]/length(use)
 # Print posteriors on k
 println("Posteriors on k:")
 println("  Jain-Neal  RJMCMC")
+using Printf
 for k=1:15
     @printf "k=%d: %.4f %.4f\n" k k_posterior_JN[k] k_posterior_RJ[k]
 end
@@ -96,7 +99,7 @@ if can_plot
     # ==================== Plot density estimate ====================
     # Plot density estimate using Jain-Neal output
     B.open_figure(4)
-    B.plot_histogram(x; color="w",edgecolor="g",linewidth=0.5)
+    hist(x; color="w",edgecolor="g",linewidth=0.5)
     B.rug_plot(x)
     B.plot_density_estimate(result; resolution=500)
 end

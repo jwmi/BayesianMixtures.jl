@@ -1,4 +1,7 @@
 
+using SpecialFunctions
+lgamma_(x) = logabsgamma(x)[1]
+
 function randp(p,d)
     s = 0.; for j = 1:d; s += p[j]; end
     u = rand()*s
@@ -83,11 +86,11 @@ function split_merge(xs,zs0,is,js,ti,tj,tm,ti0,tj0,t,H,a,b,log_v,n_split,n_merge
         log_prop_ba = update_parameter!(tm,ti0,xs,dummy,0,H,false)
         
         # compute acceptance probability
-        log_prior_b = log_v[t+1] + lgamma(ni+b)+lgamma(nj+b)-2*lgamma(a) + log_prior(ti,H) + log_prior(tj,H)
-        log_prior_a = log_v[t] + lgamma(ns+b)-lgamma(a) + log_prior(ti0,H)
+        log_prior_b = log_v[t+1] + lgamma_(ni+b)+lgamma_(nj+b)-2*lgamma_(a) + log_prior(ti,H) + log_prior(tj,H)
+        log_prior_a = log_v[t] + lgamma_(ns+b)-lgamma_(a) + log_prior(ti0,H)
         log_lik_ratio = 0.
         for k = 1:ns
-            log_lik_ratio += log(likelihood(xs[k],(zs[k]? ti:tj))) - log(likelihood(xs[k],ti0))
+            log_lik_ratio += log(likelihood(xs[k],(zs[k] ? ti : tj))) - log(likelihood(xs[k],ti0))
         end
         p_accept = min(1, exp(log_prop_ba-log_prop_ab + log_prior_b-log_prior_a + log_lik_ratio))
         #println("split proposal: ",p_accept)
@@ -104,12 +107,12 @@ function split_merge(xs,zs0,is,js,ti,tj,tm,ti0,tj0,t,H,a,b,log_v,n_split,n_merge
         log_prop_ba,ni,nj = restricted_Gibbs!(zs,zs0,ni,nj,xs,ns,is,js,ti,ti0,tj,tj0,b,H,false)
 
         # compute acceptance probability
-        log_prior_b = log_v[t-1] + lgamma(ns+b)-lgamma(a) + log_prior(tm,H)
-        log_prior_a = log_v[t] + lgamma(ni+b)+lgamma(nj+b)-2*lgamma(a) + log_prior(ti0,H) + log_prior(tj0,H)
+        log_prior_b = log_v[t-1] + lgamma_(ns+b)-lgamma_(a) + log_prior(tm,H)
+        log_prior_a = log_v[t] + lgamma_(ni+b)+lgamma_(nj+b)-2*lgamma_(a) + log_prior(ti0,H) + log_prior(tj0,H)
         @assert(ni==sum(zs0) && nj==sum(.!zs0))
         log_lik_ratio = 0.
         for k = 1:ns
-            log_lik_ratio += log(likelihood(xs[k],tm)) - log(likelihood(xs[k],(zs0[k]? ti0:tj0)))
+            log_lik_ratio += log(likelihood(xs[k],tm)) - log(likelihood(xs[k],(zs0[k] ? ti0 : tj0)))
         end
         p_accept = min(1, exp(log_prop_ba-log_prop_ab + log_prior_b-log_prior_a + log_lik_ratio))
         #println("merge proposal: ",p_accept)
@@ -134,7 +137,7 @@ function sampler(options,n_total,n_keep)
 
     @assert(n==length(x))
     keepers = zeros(Int,n_keep)
-    keepers[:] = round.(Int,linspace(round(Int,n_total/n_keep),n_total,n_keep))
+    keepers[:] = round.(Int,range(round(Int,n_total/n_keep),stop=n_total,length=n_keep))
     keep_index = 0
 
     if model_type=="MFM"
@@ -163,7 +166,7 @@ function sampler(options,n_total,n_keep)
     zs = ones(Int,n)  # temporary variable used for split-merge assignments
     S = zeros(Int,n)  # temporary variable used for split-merge indices
     
-    log_Nb = log.((1:n) + b)
+    log_Nb = log.((1:n) .+ b)
     
     # Record-keeping variables
     t_r = zeros(Int8,n_total); @assert(t_max < 2^7)
@@ -187,13 +190,13 @@ function sampler(options,n_total,n_keep)
         if model_type=="DPM" && alpha_random
             # Metropolis-Hastings move for DP concentration parameter
             aprop = alpha*exp(randn()*sigma_alpha)
-            top = t*log(aprop) - lgamma(aprop+n) + lgamma(aprop) - aprop + log(aprop)
-            bot = t*log(alpha) - lgamma(alpha+n) + lgamma(alpha) - alpha + log(alpha)
+            top = t*log(aprop) - lgamma_(aprop+n) + lgamma_(aprop) - aprop + log(aprop)
+            bot = t*log(alpha) - lgamma_(alpha+n) + lgamma_(alpha) - alpha + log(alpha)
             if rand() < min(1.0,exp(top-bot))
                 alpha = aprop
             end
-            #for i=1:t_max+1; log_v[i] = i*log(alpha) - lgamma(alpha+n) + lgamma(alpha); end
-            log_v = (1:t_max+1)*log(alpha) - lgamma(alpha+n) + lgamma(alpha)
+            #for i=1:t_max+1; log_v[i] = i*log(alpha) - lgamma_(alpha+n) + lgamma_(alpha); end
+            log_v = (1:t_max+1)*log(alpha) .- lgamma_(alpha+n) .+ lgamma_(alpha)
             A = alpha*ones(n)
         end
             
@@ -246,12 +249,13 @@ function sampler(options,n_total,n_keep)
         # -------------- Split/merge move --------------
         if use_splitmerge
             # randomly choose a pair of indices
-            shuffle!(indices)
-            i,j = indices[1],indices[2]
+			ind1 = rand(1:length(indices))
+			ind2 = rand(1:length(indices)-1); ind2 += (ind2>=ind1)
+			i,j = indices[ind1],indices[ind2]
             c_i,c_j = z[i],z[j]
             # consider the subset of points in the clusters of i and j
-            S = find((z.==c_i).|(z.==c_j))
-            is,js = findfirst(S,i),findfirst(S,j)
+            S = findall((z.==c_i).|(z.==c_j))
+            is,js = findfirst(isequal(i),S),findfirst(isequal(j),S)
             accept,zs,ni,nj = split_merge(x[S],(z[S].==c_i),is,js,ti,tj,tm,theta[:,c_i],theta[:,c_j],t,H,a,b,log_v,n_split,n_merge)
             if accept
                 if c_i==c_j
@@ -262,7 +266,7 @@ function sampler(options,n_total,n_keep)
                     c_j = ordered_insert_next!(list,t)
                     
                     # z[S[zs]] = c_i is already true
-                    z[S[.!zs]] = c_j
+                    z[S[.!zs]] .= c_j
                     N[c_i] = ni
                     N[c_j] = nj
                     for l = 1:D
@@ -273,7 +277,7 @@ function sampler(options,n_total,n_keep)
                     t += 1
                 else
                     # merge cluster c_j into c_i
-                    z[S] = c_i
+                    z[S] .= c_i
                     N[c_i] += N[c_j]
                     N[c_j] = 0  # (strictly speaking, this is not necessary)
                     theta[1,c_i] = tm[1]

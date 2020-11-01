@@ -1,9 +1,14 @@
 # Run collapsed Jain-Neal sampler on a gene expression data set.
 module GeneExpression
 
+using DelimitedFiles
+using Statistics
 using BayesianMixtures
 B = BayesianMixtures
-can_plot = (Pkg.installed("PyPlot")!=nothing)
+
+using Pkg
+packages_installed = [pkg.name for pkg in collect(values(Pkg.dependencies()))]
+can_plot = ("PyPlot" in packages_installed)
 can_plot ? using PyPlot : warn("Skipping plots since PyPlot is not installed.")
 
 # Load data

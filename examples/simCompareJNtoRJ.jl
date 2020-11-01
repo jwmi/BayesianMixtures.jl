@@ -1,9 +1,14 @@
 # Compare Jain-Neal sampler to Reversible Jump on simulated data of increasing dimension.
 module SimCompareJNtoRJ
 
+using Statistics
+using Random
 using BayesianMixtures
 B = BayesianMixtures
-can_plot = (Pkg.installed("PyPlot")!=nothing)
+
+using Pkg
+packages_installed = [pkg.name for pkg in collect(values(Pkg.dependencies()))]
+can_plot = ("PyPlot" in packages_installed)
 can_plot ? using PyPlot : warn("Skipping plots since PyPlot is not installed.")
 
 # Settings
@@ -19,14 +24,14 @@ for (i_d,d) in enumerate(ds)
                                ("Uncollapsed Jain-Neal","MVNaaN","r"),
                                ("RJMCMC","MVNaaRJ","b")]
     
-        if reset_random; srand(0); end
+        if reset_random; Random.seed!(0); end
 
         # Generate data
         n = 100
         xs = [randn(d) for i = 1:n]
         zs = [Int(ceil(rand()*3)) for i = 1:n]
         shift = (3/sqrt(d))*[-1,0,1]
-        x = convert(Array{Array{Float64,1},1},[xs[i]+shift[zs[i]] for i = 1:n])
+        x = convert(Array{Array{Float64,1},1},[xs[i].+shift[zs[i]] for i = 1:n])
         mu = mean(x)  # sample mean
         v = mean([xi.*xi for xi in x]) - mu.*mu  # sample variance
         x = [((xi-mu)./sqrt.(v))::Array{Float64,1} for xi in x] # normalized to zero mean, unit variance
@@ -37,6 +42,7 @@ for (i_d,d) in enumerate(ds)
         result = B.run_sampler(options)
 
         # Traceplot of t
+		global fignum
         B.open_figure(fignum+=1)
         t_show = 20  # number of seconds to show
         B.traceplot_timewise(result,t_show)

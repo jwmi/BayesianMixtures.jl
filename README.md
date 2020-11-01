@@ -25,10 +25,13 @@ Please cite the following publication if you use this package in your research:
 
 - Install [Julia](http://julialang.org/downloads/).
 
-- Start Julia and run the following command:
+- Start Julia and run the following commands:
 ```
+using Pkg
 Pkg.clone("https://github.com/jwmi/BayesianMixtures.jl.git")
+Pkg.add("SpecialFunctions")
 ```
+
 
 ## Basic usage example
 
