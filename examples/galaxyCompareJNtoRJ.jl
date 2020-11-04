@@ -1,15 +1,10 @@
 # Compare Jain-Neal sampler to Reversible Jump on the galaxy dataset.
 module GalaxyCompareJNtoRJ
 
-using PyPlot
 using DelimitedFiles
 using BayesianMixtures
 B = BayesianMixtures
 
-using Pkg
-packages_installed = [pkg.name for pkg in collect(values(Pkg.dependencies()))]
-can_plot = ("PyPlot" in packages_installed)
-can_plot ? using PyPlot : @warn("Skipping plots since PyPlot is not installed.")
 
 # ==================== Run Jain-Neal sampler ====================
 
@@ -74,35 +69,34 @@ for k=1:15
     @printf "k=%d: %.4f %.4f\n" k k_posterior_JN[k] k_posterior_RJ[k]
 end
 
-if can_plot
-    
-    # ==================== Compare traceplots of t ====================
-    # Traceplot of t for Jain-Neal
-    B.open_figure(1)
-    B.traceplot(result.t[1:min(5000,n_total)])
-    B.labels("Traceplot for t (Jain-Neal)","sweep number","t")
 
-    # Traceplot of t for RJMCMC
-    B.open_figure(2)
-    B.traceplot(t_RJ[1:min(5000,n_total)])
-    B.labels("Traceplot for t (RJMCMC)","sweep number","t")
+# ==================== Compare traceplots of t ====================
+# Traceplot of t for Jain-Neal
+B.open_figure(1)
+B.traceplot(result.t[1:min(5000,n_total)])
+B.labels("Traceplot for t (Jain-Neal)","sweep number","t")
 
-    # ==================== Compare autocorrelation of t ====================
-    # Plot autocorrelation for Jain-Neal
-    B.open_figure(3)
-    B.plot_autocorrelation(result,0.01)
+# Traceplot of t for RJMCMC
+B.open_figure(2)
+B.traceplot(t_RJ[1:min(5000,n_total)])
+B.labels("Traceplot for t (RJMCMC)","sweep number","t")
 
-    # Plot autocorrelation for RJMCMC
-    B.plot_autocorrelation(t_RJ[use],0.01,elapsed_time_RJ/n_total; color="r")
-    legend(["Jain-Neal","RJMCMC"],loc="upper right",fontsize=12)
-   
-    # ==================== Plot density estimate ====================
-    # Plot density estimate using Jain-Neal output
-    B.open_figure(4)
-    hist(x; color="w",edgecolor="g",linewidth=0.5)
-    B.rug_plot(x)
-    B.plot_density_estimate(result; resolution=500)
-end
+# ==================== Compare autocorrelation of t ====================
+# Plot autocorrelation for Jain-Neal
+B.open_figure(3)
+B.plot_autocorrelation(result,0.01)
+
+# Plot autocorrelation for RJMCMC
+B.plot_autocorrelation(t_RJ[use],0.01,elapsed_time_RJ/n_total; color="r")
+B.PyPlot.legend(["Jain-Neal","RJMCMC"],loc="upper right",fontsize=12)
+
+# ==================== Plot density estimate ====================
+# Plot density estimate using Jain-Neal output
+B.open_figure(4)
+B.PyPlot.hist(x; color="w",edgecolor="g",linewidth=0.5)
+B.rug_plot(x)
+B.plot_density_estimate(result; resolution=500)
+
 
 end # module GalaxyCompareJNtoRJ
 

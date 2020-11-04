@@ -6,11 +6,6 @@ using Statistics
 using BayesianMixtures
 B = BayesianMixtures
 
-using Pkg
-packages_installed = [pkg.name for pkg in collect(values(Pkg.dependencies()))]
-can_plot = ("PyPlot" in packages_installed)
-can_plot ? using PyPlot : warn("Skipping plots since PyPlot is not installed.")
-
 # Load data
 collection = "deSouto"
 data_ID = "armstrong-2002-v1"
@@ -45,8 +40,8 @@ B.open_figure(1)
 B.plot_t_posterior(result; color="b", marker="s", label="p(t|data)")
 B.plot_k_posterior(result; color="g", marker="o", label="p(k|data)")
 B.labels("Posteriors on t and k","t (clusters) or k (components)","")
-legend(loc="upper right",numpoints=1)
-xlim(0,15)
+B.PyPlot.legend(loc="upper right",numpoints=1)
+B.PyPlot.xlim(0,15)
 
 # Posterior similarity matrix (probability that i and j are in same cluster)
 B.open_figure(2; figure_size=(5,4))

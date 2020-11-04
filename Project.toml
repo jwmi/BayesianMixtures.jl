@@ -1,7 +1,7 @@
 name = "BayesianMixtures"
 uuid = "3999e62f-30f3-49d2-88e3-26380929634c"
 authors = ["Jeff Miller <jwmillerusa@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 JLD = "4138dd39-2aa7-5051-a626-17a0bb65d9c8"

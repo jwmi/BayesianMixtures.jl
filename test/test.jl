@@ -2,7 +2,6 @@
 
 using BayesianMixtures
 using Statistics
-using PyPlot
 
 n_total = 1000  # total number of MCMC sweeps to run
 
@@ -39,9 +38,9 @@ for mode_ in ["MVN","MVNaaC","MVNaaN","MVNaaRJ"]
 end
 
 
+
 # _____________________________________________________________________________________
 # Check other functions using univariate data
-
 
 # Settings
 mode = "Normal"
@@ -68,20 +67,19 @@ B.plot_density_estimate(result)
 k,a,w,theta = B.sample_mixture_parameters(result,50)
 loglik = B.log_likelihoods(x,w,theta,mode)
 
-
 B.open_figure(1)
-B.traceplot(result.t); pause(0.5); clf()
-B.traceplot_timewise(result,1); pause(0.5); clf()
-B.plot_t_running(result); pause(0.5); clf()
-B.plot_autocorrelation(result,20); pause(0.5); clf()
-B.plot_t_posterior(result); pause(0.5); clf()
-B.plot_t_posterior_average([result]); pause(0.5); clf()
-B.plot_k_posterior(result); pause(0.5); clf()
-B.plot_k_posterior_average([result]); pause(0.5); clf()
-B.plot_similarity_matrix(result); pause(0.5); clf()
-B.plot_clusters(x,result.z[:,end]); pause(0.5); clf()
-B.rug_plot(x); pause(0.5); clf()
-B.plot_density_estimate(result); pause(0.5); clf()
+B.traceplot(result.t); P.pause(0.5); P.clf()
+B.traceplot_timewise(result,1); P.pause(0.5); P.clf()
+B.plot_t_running(result); P.pause(0.5); P.clf()
+B.plot_autocorrelation(result,20); P.pause(0.5); P.clf()
+B.plot_t_posterior(result); P.pause(0.5); P.clf()
+B.plot_t_posterior_average([result]); P.pause(0.5); P.clf()
+B.plot_k_posterior(result); P.pause(0.5); P.clf()
+B.plot_k_posterior_average([result]); P.pause(0.5); P.clf()
+B.plot_similarity_matrix(result); P.pause(0.5); P.clf()
+B.plot_clusters(x,result.z[:,end]); P.pause(0.5); P.clf()
+B.rug_plot(x); P.pause(0.5); P.clf()
+B.plot_density_estimate(result); P.pause(0.5); P.clf()
 
 
 
@@ -119,17 +117,17 @@ loglik = B.log_likelihoods(x,w,theta,mode)
 
 
 B.open_figure(1)
-B.traceplot(result.t); pause(0.5); clf()
-B.traceplot_timewise(result,1); pause(0.5); clf()
-B.plot_t_running(result); pause(0.5); clf()
-B.plot_autocorrelation(result,20); pause(0.5); clf()
-B.plot_t_posterior(result); pause(0.5); clf()
-B.plot_t_posterior_average([result]); pause(0.5); clf()
-B.plot_k_posterior(result); pause(0.5); clf()
-B.plot_k_posterior_average([result]); pause(0.5); clf()
-B.plot_similarity_matrix(result); pause(0.5); clf()
-B.plot_clusters(x,result.z[:,end]); pause(0.5); clf()
-B.plot_density_estimate(result); pause(0.5); clf()
+B.traceplot(result.t); P.pause(0.5); P.clf()
+B.traceplot_timewise(result,1); P.pause(0.5); P.clf()
+B.plot_t_running(result); P.pause(0.5); P.clf()
+B.plot_autocorrelation(result,20); P.pause(0.5); P.clf()
+B.plot_t_posterior(result); P.pause(0.5); P.clf()
+B.plot_t_posterior_average([result]); P.pause(0.5); P.clf()
+B.plot_k_posterior(result); P.pause(0.5); P.clf()
+B.plot_k_posterior_average([result]); P.pause(0.5); P.clf()
+B.plot_similarity_matrix(result); P.pause(0.5); P.clf()
+B.plot_clusters(x,result.z[:,end]); P.pause(0.5); P.clf()
+B.plot_density_estimate(result); P.pause(0.5); P.clf()
 
 
 

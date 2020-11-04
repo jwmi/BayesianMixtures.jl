@@ -7,13 +7,6 @@ using BayesianMixtures
 B = BayesianMixtures
 Theta = B.MVN.Theta
 
-using Pkg
-packages_installed = [pkg.name for pkg in collect(values(Pkg.dependencies()))]
-can_plot = ("PyPlot" in packages_installed)
-can_save = ("JLD" in packages_installed)
-can_plot ? using PyPlot : warn("Skipping plots since PyPlot is not installed.")
-can_save ? using JLD : warn("Saving disabled since JLD is not installed.")
-
 # Settings
 plot_runs = true # display plots of results or not
 save_runs = true # save results to file or not
@@ -82,7 +75,7 @@ if !from_file
                 result = B.run_sampler(options)
 
                 # Save result to file
-                if can_save && save_runs
+                if save_runs
                     B.save_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld"),result)
                 end
             end
@@ -90,7 +83,7 @@ if !from_file
     end
 end
 
-if can_save && can_plot && save_runs && plot_runs
+if save_runs && plot_runs
     figure_number = 0
     color_list = Any[[0.5,1,0.5],[0.25,0.25,1],[0.75,0,1],"y","k"]
     marker_list = Any["s","^","v","o","*"]
@@ -103,10 +96,10 @@ if can_save && can_plot && save_runs && plot_runs
             results = [B.load_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld")) for rep in reps]
             B.plot_t_posterior_average(results; color=color_list[i_n], marker=marker_list[i_n], label="n = $n")
             B.labels("$model_type posterior on t","t (number of clusters)","p(t|data)")
-            xlim(0,10); ylim(0,1)
-            legend(loc="upper right", fontsize=10, numpoints=1)
+            B.PyPlot.xlim(0,10); B.PyPlot.ylim(0,1)
+            B.PyPlot.legend(loc="upper right", fontsize=10, numpoints=1)
         end
-        if save_figures; savefig("simCompareDPM-t_posterior-$model_type.png",dpi=200); end
+        if save_figures; B.PyPlot.savefig("simCompareDPM-t_posterior-$model_type.png",dpi=200); end
     end
         
     # Plot MFM posterior on k for each n
@@ -117,10 +110,10 @@ if can_save && can_plot && save_runs && plot_runs
             results = [B.load_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld")) for rep in reps]
             B.plot_k_posterior_average(results; color=color_list[i_n], marker=marker_list[i_n], label="n = $n")
             B.labels("$model_type posterior on k","k (number of components)","p(k|data)")
-            xlim(0,10); ylim(0,1)
-            legend(loc="upper right", fontsize=10, numpoints=1)
+            B.PyPlot.xlim(0,10); B.PyPlot.ylim(0,1)
+            B.PyPlot.legend(loc="upper right", fontsize=10, numpoints=1)
         end
-        if save_figures; savefig("simCompareDPM-k_posterior-$model_type.png",dpi=200); end
+        if save_figures; B.PyPlot.savefig("simCompareDPM-k_posterior-$model_type.png",dpi=200); end
     end
 
     # Plot some density estimates for each model_type
@@ -132,7 +125,7 @@ if can_save && can_plot && save_runs && plot_runs
             result = B.load_result(joinpath(results_directory,"n=$n-rep=$rep-type=$model_type.jld"))
             B.plot_density_estimate(result; resolution=40)
             B.labels("$model_type density estimate, n = $n")
-            if save_figures; savefig("simCompareDPM-density-$model_type-n=$n.png",dpi=200); end
+            if save_figures; B.PyPlot.savefig("simCompareDPM-density-$model_type-n=$n.png",dpi=200); end
         end
     end
 
@@ -149,7 +142,7 @@ if can_save && can_plot && save_runs && plot_runs
                 z = result.z[:,index][:]
                 B.plot_clusters(x,z; markersize=5)
                 B.labels("$model_type sample clusters, n = $n, index = $index")
-                if save_figures; savefig("simCompareDPM-clusters-$model_type-n=$n-index=$index.png",dpi=200); end
+                if save_figures; B.PyPlot.savefig("simCompareDPM-clusters-$model_type-n=$n-index=$index.png",dpi=200); end
             end
         end
     end

@@ -28,8 +28,7 @@ Please cite the following publication if you use this package in your research:
 - Start Julia and run the following commands:
 ```
 using Pkg
-Pkg.add(url="https://github.com/jwmi/BayesianMixtures.jl.git")
-Pkg.add("SpecialFunctions")
+Pkg.add(url="https://github.com/jwmi/BayesianMixtures.jl")
 ```
 
 
@@ -61,37 +60,6 @@ For more in-depth examples, see the [examples](examples/) folder.
 
 In addition to the Jain-Neal sampler, reversible jump MCMC is also implemented for certain classes of MFMs (specifically, univariate normal mixtures and multivariate normal mixtures with diagonal covariance). For univariate normal mixtures, we use the algorithm of Richardson and Green (1997). A copy of Peter Green's [Nmix](https://people.maths.bris.ac.uk/~mapjg/Nmix/) program is also included, for convenience.
 
-### Optional: Saving results
-
-Functions for saving/loading results from file are provided.  To use them, you need to install a couple things as follows:
-- Mac users (Windows users skip this step): Install the Command Line Tools (CLT) by opening a terminal window and entering: `xcode-select --install`.  In the window that pops up, click `Install` (**not** `Get Xcode`).
-- Then, install [JLD](https://github.com/JuliaIO/JLD.jl) by opening Julia and entering:
-```
-using Pkg
-Pkg.add("JLD")
-using JLD
-```
-
-### Optional: Plotting results
-
-Functions for plotting are also provided.  To use them, install [PyPlot](https://github.com/JuliaPy/PyPlot.jl) by entering the following commands:
-```
-using Pkg
-ENV["PYTHON"]=""
-Pkg.add("PyPlot")
-using PyPlot
-```
-Hopefully that will work, but if you get errors, you can either (a) not use the plotting functions in BayesianMixtures, or (b) try your luck with the PyPlot installation instructions [here](https://github.com/JuliaPy/PyPlot.jl).  
-
-
-
-## Updating to the latest version
-
-If you want to update your installation of BayesianMixtures to the latest version of the package, run the following commands in Julia:
-```
-Pkg.rm("BayesianMixtures")
-Pkg.clone("https://github.com/jwmi/BayesianMixtures.jl.git")
-```
 
 
 ## Questions or bugs
